@@ -288,23 +288,9 @@ const FacultyDashboard = () => {
                   </span>
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-3 mr-6">
-                <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                  Session Active
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowQR(false);
-                    setIsActive(false);
-                    toast.info("Attendance session ended");
-                  }}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  End Session
-                </Button>
+              <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full mr-6">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                Session Active
               </div>
             </div>
           </DialogHeader>
@@ -326,6 +312,19 @@ const FacultyDashboard = () => {
               <p className="text-xs text-muted-foreground mt-4 text-center max-w-[200px]">
                 Students scan this QR code with their device to mark attendance
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => {
+                  setShowQR(false);
+                  setIsActive(false);
+                  toast.info("Attendance session ended");
+                }}
+              >
+                <X className="mr-2 h-4 w-4" />
+                End Session
+              </Button>
             </div>
 
             {/* Right Side - Stats & Students (3 cols) */}
