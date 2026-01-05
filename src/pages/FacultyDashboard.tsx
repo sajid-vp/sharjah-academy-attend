@@ -468,40 +468,40 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
+          {/* Maximized QR Overlay (must be inside Dialog to receive pointer events) */}
+          {isQRMaximized && (
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-background/95 backdrop-blur-sm"
+              onClick={() => setIsQRMaximized(false)}
+            >
+              <div className="flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                <div className="relative rounded-3xl bg-white p-8 shadow-2xl">
+                  <QRCodeSVG value={qrData} size={420} level="H" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-3 right-3 h-10 w-10 bg-muted/80 hover:bg-muted"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsQRMaximized(false);
+                    }}
+                  >
+                    <Minimize2 className="h-5 w-5" />
+                  </Button>
+                </div>
+                <div className="mt-6 text-center">
+                  <div className="text-8xl font-bold text-primary">{timeLeft}s</div>
+                  <div className="text-lg text-muted-foreground mt-2">Time remaining</div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-6 text-center">
+                  Press <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">ESC</kbd> or click minimize to return
+                </p>
+              </div>
+            </div>
+          )}
+
         </DialogContent>
       </Dialog>
-
-      {/* Maximized QR Overlay */}
-      {isQRMaximized && showQR && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm"
-          onClick={() => setIsQRMaximized(false)}
-        >
-          <div className="flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            <div className="relative rounded-3xl bg-white p-8 shadow-2xl">
-              <QRCodeSVG value={qrData} size={420} level="H" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-3 right-3 h-10 w-10 bg-muted/80 hover:bg-muted z-10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsQRMaximized(false);
-                }}
-              >
-                <Minimize2 className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="mt-6 text-center">
-              <div className="text-8xl font-bold text-primary">{timeLeft}s</div>
-              <div className="text-lg text-muted-foreground mt-2">Time remaining</div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-6 text-center">
-              Press <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">ESC</kbd> or click minimize to return
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
