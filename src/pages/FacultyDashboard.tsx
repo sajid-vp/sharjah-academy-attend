@@ -31,6 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Student {
   id: string;
@@ -612,36 +618,73 @@ const FacultyDashboard = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className="flex items-center gap-1 text-success">
-                            <CheckCircle className="h-4 w-4" />
-                            {session.presentCount}
-                          </span>
-                          <span className="flex items-center gap-1 text-warning">
-                            <AlertCircle className="h-4 w-4" />
-                            {session.excusedCount}
-                          </span>
-                          <span className="flex items-center gap-1 text-destructive">
-                            <XCircle className="h-4 w-4" />
-                            {session.absentCount}
-                          </span>
-                        </div>
-                        <div className={`text-sm font-semibold ${
-                          Number(attendanceRate) >= 80 ? "text-success" : 
-                          Number(attendanceRate) >= 60 ? "text-warning" : "text-destructive"
-                        }`}>
-                          {attendanceRate}%
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleExportSession(session);
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                        <TooltipProvider>
+                          <div className="flex items-center gap-3 text-sm">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center gap-1 text-success cursor-default">
+                                  <CheckCircle className="h-4 w-4" />
+                                  {session.presentCount}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{session.presentCount} students present</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center gap-1 text-warning cursor-default">
+                                  <AlertCircle className="h-4 w-4" />
+                                  {session.excusedCount}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{session.excusedCount} students excused</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center gap-1 text-destructive cursor-default">
+                                  <XCircle className="h-4 w-4" />
+                                  {session.absentCount}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{session.absentCount} students absent</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className={`text-sm font-semibold cursor-default ${
+                              Number(attendanceRate) >= 80 ? "text-success" : 
+                              Number(attendanceRate) >= 60 ? "text-warning" : "text-destructive"
+                            }`}>
+                              {attendanceRate}%
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Attendance rate ({session.presentCount + session.excusedCount}/{session.totalStudents})</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleExportSession(session);
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Export to CSV</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
                   );
