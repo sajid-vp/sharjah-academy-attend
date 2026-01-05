@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2, History, ChevronDown, AlertCircle, Download, Filter, MoreHorizontal } from "lucide-react";
-import { format, subDays } from "date-fns";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2, History, AlertCircle, Download, Filter, MoreHorizontal, CalendarIcon } from "lucide-react";
+import { format, subDays, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -162,6 +165,8 @@ const FacultyDashboard = () => {
   const [sessions] = useState<Session[]>(MOCK_SESSIONS);
   const [activeTab, setActiveTab] = useState("today");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedPastSession, setSelectedPastSession] = useState<PastSession | null>(null);
   const today = new Date();
 
@@ -297,9 +302,17 @@ const FacultyDashboard = () => {
   const inProgressSessions = sessions.filter(s => s.attendanceStatus === "in-progress").length;
   const notStartedSessions = sessions.filter(s => s.attendanceStatus === "not-started").length;
 
-  const filteredPastSessions = courseFilter === "all" 
-    ? MOCK_PAST_SESSIONS 
-    : MOCK_PAST_SESSIONS.filter(s => s.courseId === courseFilter);
+  const filteredPastSessions = MOCK_PAST_SESSIONS.filter(s => {
+    const matchesCourse = courseFilter === "all" || s.courseId === courseFilter;
+    const matchesDateFrom = !dateFrom || !isBefore(s.date, startOfDay(dateFrom));
+    const matchesDateTo = !dateTo || !isAfter(s.date, endOfDay(dateTo));
+    return matchesCourse && matchesDateFrom && matchesDateTo;
+  });
+
+  const clearDateFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
 
   const getStatusBadge = (status: Student["status"], isManualOverride?: boolean) => {
     const badges = {
@@ -480,7 +493,7 @@ const FacultyDashboard = () => {
           {/* Session History Tab */}
           <TabsContent value="history" className="mt-6">
             {/* Filters */}
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-6 flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">Filter by:</span>
@@ -498,6 +511,66 @@ const FacultyDashboard = () => {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Date From */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[160px] justify-start text-left font-normal",
+                      !dateFrom && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateFrom}
+                    onSelect={setDateFrom}
+                    disabled={(date) => date > today || (dateTo ? date > dateTo : false)}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Date To */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[160px] justify-start text-left font-normal",
+                      !dateTo && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateTo ? format(dateTo, "MMM d, yyyy") : "To date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateTo}
+                    onSelect={setDateTo}
+                    disabled={(date) => date > today || (dateFrom ? date < dateFrom : false)}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Clear Date Filters */}
+              {(dateFrom || dateTo) && (
+                <Button variant="ghost" size="sm" onClick={clearDateFilters}>
+                  <X className="mr-1 h-4 w-4" />
+                  Clear dates
+                </Button>
+              )}
             </div>
 
             {/* Past Sessions List */}
