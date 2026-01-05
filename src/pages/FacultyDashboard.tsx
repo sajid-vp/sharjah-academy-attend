@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen } from "lucide-react";
 import { format } from "date-fns";
@@ -57,7 +56,7 @@ const MOCK_STUDENTS: Student[] = [
 ];
 
 const FacultyDashboard = () => {
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [qrData, setQrData] = useState("");
   const [timeLeft, setTimeLeft] = useState(30);
@@ -101,27 +100,24 @@ const FacultyDashboard = () => {
     }
   }, [isActive]);
 
-  const handleStartAttendance = () => {
-    if (!selectedCourse) {
-      toast.error("Please select a course first");
-      return;
-    }
-
-    const course = MOCK_COURSES.find((c) => c.id === selectedCourse);
+  const handleStartAttendance = (session: Session) => {
+    const course = MOCK_COURSES.find((c) => c.id === session.courseId);
     const timestamp = new Date().toISOString();
     const qrContent = JSON.stringify({
       crn: course?.crn,
-      courseId: selectedCourse,
+      courseId: session.courseId,
+      sessionId: session.id,
       timestamp,
       expiresAt: new Date(Date.now() + 30000).toISOString(),
     });
 
+    setSelectedSession(session);
     setQrData(qrContent);
     setShowQR(true);
     setIsActive(true);
     setTimeLeft(30);
     setStudents(MOCK_STUDENTS.map((s) => ({ ...s, status: "pending" })));
-    toast.success("Attendance session started");
+    toast.success(`Attendance started for ${session.courseName}`);
   };
 
   const presentCount = students.filter((s) => s.status === "present").length;
@@ -245,10 +241,7 @@ const FacultyDashboard = () => {
                   {session.attendanceStatus !== "completed" && (
                     <Button
                       size="sm"
-                      onClick={() => {
-                        setSelectedCourse(session.courseId);
-                        handleStartAttendance();
-                      }}
+                      onClick={() => handleStartAttendance(session)}
                       disabled={isActive}
                       className={session.attendanceStatus === "in-progress" ? "bg-primary" : "bg-gradient-primary"}
                     >
@@ -264,33 +257,6 @@ const FacultyDashboard = () => {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <Card className="mb-8 border-none p-6 shadow-medium">
-              <h2 className="mb-4 text-xl font-semibold text-card-foreground">
-                Quick Start Attendance
-              </h2>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                  <SelectTrigger className="sm:w-[300px]">
-                    <SelectValue placeholder="Select a course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MOCK_COURSES.map((course) => (
-                      <SelectItem key={course.id} value={course.id}>
-                        {course.name} (CRN: {course.crn})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleStartAttendance}
-                  disabled={!selectedCourse || isActive}
-                  className="bg-gradient-primary shadow-medium"
-                >
-                  <QrCode className="mr-2 h-5 w-5" />
-                  Start Auto Attendance
-                </Button>
-              </div>
-            </Card>
 
             <Card className="border-none p-6 shadow-medium">
               <div className="mb-4 flex items-center justify-between">
@@ -396,7 +362,7 @@ const FacultyDashboard = () => {
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Scan QR Code to Mark Attendance</DialogTitle>
+            <DialogTitle>{selectedSession?.courseName} - Attendance</DialogTitle>
             <DialogDescription>
               Students should scan this code within {timeLeft} seconds
             </DialogDescription>
