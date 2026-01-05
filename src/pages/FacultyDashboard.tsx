@@ -76,9 +76,11 @@ interface PastSession {
 }
 
 const MOCK_COURSES = [
-  { id: "CS101", name: "Introduction to Programming", crn: "12345" },
-  { id: "CS201", name: "Data Structures", crn: "12346" },
-  { id: "CS301", name: "Web Development", crn: "12347" },
+  { id: "CS101", name: "Introduction to Programming", crn: "12345", section: "A" },
+  { id: "CS101-B", name: "Introduction to Programming", crn: "12348", section: "B" },
+  { id: "CS201", name: "Data Structures", crn: "12346", section: "A" },
+  { id: "CS301", name: "Web Development", crn: "12347", section: "A" },
+  { id: "CS301-B", name: "Web Development", crn: "12349", section: "B" },
 ];
 
 const MOCK_SESSIONS: Session[] = [
@@ -173,6 +175,7 @@ const FacultyDashboard = () => {
   const [sessions] = useState<Session[]>(MOCK_SESSIONS);
   const [activeTab, setActiveTab] = useState("today");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [sectionFilter, setSectionFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedPastSession, setSelectedPastSession] = useState<PastSession | null>(null);
@@ -350,11 +353,16 @@ const FacultyDashboard = () => {
   const inProgressSessions = sessions.filter(s => s.attendanceStatus === "in-progress").length;
   const notStartedSessions = sessions.filter(s => s.attendanceStatus === "not-started").length;
 
+  // Get unique sections from courses
+  const uniqueSections = [...new Set(MOCK_COURSES.map(c => c.section))].sort();
+
   const filteredPastSessions = MOCK_PAST_SESSIONS.filter(s => {
+    const course = MOCK_COURSES.find(c => c.id === s.courseId);
     const matchesCourse = courseFilter === "all" || s.courseId === courseFilter;
+    const matchesSection = sectionFilter === "all" || course?.section === sectionFilter;
     const matchesDateFrom = !dateFrom || !isBefore(s.date, startOfDay(dateFrom));
     const matchesDateTo = !dateTo || !isAfter(s.date, endOfDay(dateTo));
-    return matchesCourse && matchesDateFrom && matchesDateTo;
+    return matchesCourse && matchesSection && matchesDateFrom && matchesDateTo;
   });
 
   const clearDateFilters = () => {
@@ -547,14 +555,29 @@ const FacultyDashboard = () => {
                 <span className="text-sm font-medium text-muted-foreground">Filter by:</span>
               </div>
               <Select value={courseFilter} onValueChange={setCourseFilter}>
-                <SelectTrigger className="w-[250px]">
+                <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
                   {MOCK_COURSES.map((course) => (
                     <SelectItem key={course.id} value={course.id}>
-                      {course.name}
+                      {course.name} (Sec {course.section})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Section Filter */}
+              <Select value={sectionFilter} onValueChange={setSectionFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Section" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sections</SelectItem>
+                  {uniqueSections.map((section) => (
+                    <SelectItem key={section} value={section}>
+                      Section {section}
                     </SelectItem>
                   ))}
                 </SelectContent>
