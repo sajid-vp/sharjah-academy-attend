@@ -114,28 +114,14 @@ const StudentPortal = () => {
                 Scan the QR code displayed by your instructor or enter the code manually
               </p>
 
-              <div className="space-y-4">
-                <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
-                  <QrCode className="mx-auto mb-4 h-16 w-16 text-primary" />
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    Camera access for QR scanning will be available in mobile app
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    For demo purposes, paste QR data from faculty screen
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Paste QR code data here..."
-                    value={qrInput}
-                    onChange={(e) => setQrInput(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleScanQR} className="bg-gradient-primary shadow-medium">
-                    Submit
-                  </Button>
-                </div>
+              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
+                <QrCode className="mx-auto mb-4 h-16 w-16 text-primary" />
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Camera access for QR scanning will be available in mobile app
+                </p>
+                <Button onClick={handleScanQR} className="bg-gradient-primary shadow-medium">
+                  Scan QR Code
+                </Button>
               </div>
             </Card>
 
