@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2 } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2, History, ChevronDown, AlertCircle, Download, Filter, MoreHorizontal } from "lucide-react";
+import { format, subDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -13,11 +13,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Student {
   id: string;
   name: string;
-  status: "present" | "absent" | "pending";
+  status: "present" | "absent" | "pending" | "excused";
+  isManualOverride?: boolean;
+  overrideReason?: string;
 }
 
 interface Session {
@@ -30,6 +47,21 @@ interface Session {
   attendanceStatus: "not-started" | "in-progress" | "completed";
   presentCount: number;
   totalStudents: number;
+}
+
+interface PastSession {
+  id: string;
+  date: Date;
+  courseId: string;
+  courseName: string;
+  time: string;
+  location: string;
+  type: "online" | "onsite";
+  presentCount: number;
+  excusedCount: number;
+  absentCount: number;
+  totalStudents: number;
+  students: Student[];
 }
 
 const MOCK_COURSES = [
@@ -55,6 +87,71 @@ const MOCK_STUDENTS: Student[] = [
   { id: "S008", name: "Saoud Abdulrahman Saeed", status: "pending" },
 ];
 
+// Generate mock past sessions
+const generatePastSessions = (): PastSession[] => {
+  const sessions: PastSession[] = [];
+  const today = new Date();
+  
+  for (let i = 1; i <= 14; i++) {
+    const date = subDays(today, i);
+    const dayOfWeek = date.getDay();
+    
+    // Skip weekends
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+    
+    MOCK_COURSES.forEach((course, idx) => {
+      const totalStudents = 25 + Math.floor(Math.random() * 10);
+      const presentCount = Math.floor(totalStudents * (0.7 + Math.random() * 0.25));
+      const excusedCount = Math.floor(Math.random() * 3);
+      const absentCount = totalStudents - presentCount - excusedCount;
+      
+      const students: Student[] = Array.from({ length: totalStudents }, (_, sIdx) => {
+        const rand = Math.random();
+        let status: Student["status"];
+        let isManualOverride = false;
+        let overrideReason: string | undefined;
+        
+        if (rand < 0.75) {
+          status = "present";
+        } else if (rand < 0.85) {
+          status = "excused";
+          isManualOverride = true;
+          overrideReason = ["Medical appointment", "Family emergency", "Official event"][Math.floor(Math.random() * 3)];
+        } else {
+          status = "absent";
+        }
+        
+        return {
+          id: `S${String(sIdx + 1).padStart(3, "0")}`,
+          name: MOCK_STUDENTS[sIdx % MOCK_STUDENTS.length].name,
+          status,
+          isManualOverride,
+          overrideReason,
+        };
+      });
+      
+      sessions.push({
+        id: `PS-${i}-${idx}`,
+        date,
+        courseId: course.id,
+        courseName: course.name,
+        time: ["08:00 - 09:30", "10:00 - 11:30", "13:00 - 14:30"][idx],
+        location: ["Room 101", "Lab 3", "Online"][idx],
+        type: idx === 2 ? "online" : "onsite",
+        presentCount,
+        excusedCount,
+        absentCount,
+        totalStudents,
+        students,
+      });
+    });
+  }
+  
+  return sessions.sort((a, b) => b.date.getTime() - a.date.getTime());
+};
+
+const MOCK_PAST_SESSIONS = generatePastSessions();
+
 const FacultyDashboard = () => {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [showQR, setShowQR] = useState(false);
@@ -63,6 +160,9 @@ const FacultyDashboard = () => {
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
   const [isActive, setIsActive] = useState(false);
   const [sessions] = useState<Session[]>(MOCK_SESSIONS);
+  const [activeTab, setActiveTab] = useState("today");
+  const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [selectedPastSession, setSelectedPastSession] = useState<PastSession | null>(null);
   const today = new Date();
 
   // Draggable dialog state
@@ -158,13 +258,81 @@ const FacultyDashboard = () => {
     toast.success(`Attendance started for ${session.courseName}`);
   };
 
+  const handleOverrideAttendance = (studentId: string, newStatus: Student["status"], reason?: string) => {
+    setStudents((prev) =>
+      prev.map((student) =>
+        student.id === studentId
+          ? { ...student, status: newStatus, isManualOverride: true, overrideReason: reason }
+          : student
+      )
+    );
+    const student = students.find((s) => s.id === studentId);
+    toast.success(`${student?.name} marked as ${newStatus}${reason ? ` (${reason})` : ""}`);
+  };
+
+  const handleExportSession = (session: PastSession) => {
+    const csvContent = [
+      ["Student ID", "Name", "Status", "Override", "Reason"].join(","),
+      ...session.students.map((s) =>
+        [s.id, s.name, s.status, s.isManualOverride ? "Yes" : "No", s.overrideReason || ""].join(",")
+      ),
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `attendance-${session.courseName}-${format(session.date, "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Attendance exported successfully");
+  };
+
   const presentCount = students.filter((s) => s.status === "present").length;
   const absentCount = students.filter((s) => s.status === "absent").length;
   const pendingCount = students.filter((s) => s.status === "pending").length;
+  const excusedCount = students.filter((s) => s.status === "excused").length;
 
   const completedSessions = sessions.filter(s => s.attendanceStatus === "completed").length;
   const inProgressSessions = sessions.filter(s => s.attendanceStatus === "in-progress").length;
   const notStartedSessions = sessions.filter(s => s.attendanceStatus === "not-started").length;
+
+  const filteredPastSessions = courseFilter === "all" 
+    ? MOCK_PAST_SESSIONS 
+    : MOCK_PAST_SESSIONS.filter(s => s.courseId === courseFilter);
+
+  const getStatusBadge = (status: Student["status"], isManualOverride?: boolean) => {
+    const badges = {
+      present: (
+        <span className="flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
+          <CheckCircle className="h-3.5 w-3.5" />
+          Present
+          {isManualOverride && <span className="ml-1 text-[10px] opacity-70">•M</span>}
+        </span>
+      ),
+      absent: (
+        <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded-full">
+          <XCircle className="h-3.5 w-3.5" />
+          Absent
+          {isManualOverride && <span className="ml-1 text-[10px] opacity-70">•M</span>}
+        </span>
+      ),
+      excused: (
+        <span className="flex items-center gap-1 text-xs font-medium text-warning bg-warning/10 px-2 py-1 rounded-full">
+          <AlertCircle className="h-3.5 w-3.5" />
+          Excused
+          {isManualOverride && <span className="ml-1 text-[10px] opacity-70">•M</span>}
+        </span>
+      ),
+      pending: (
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Clock className="h-3.5 w-3.5" />
+          Waiting...
+        </span>
+      ),
+    };
+    return badges[status];
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,108 +359,224 @@ const FacultyDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Today's Sessions Overview */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <Card className="border-none p-4 shadow-soft">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-success/10 p-3">
-                <CheckCircle className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-card-foreground">{completedSessions}</div>
-                <div className="text-sm text-muted-foreground">Completed Sessions</div>
-              </div>
-            </div>
-          </Card>
-          <Card className="border-none p-4 shadow-soft">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-3">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-card-foreground">{inProgressSessions}</div>
-                <div className="text-sm text-muted-foreground">In Progress</div>
-              </div>
-            </div>
-          </Card>
-          <Card className="border-none p-4 shadow-soft">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-muted p-3">
-                <BookOpen className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-card-foreground">{notStartedSessions}</div>
-                <div className="text-sm text-muted-foreground">Upcoming</div>
-              </div>
-            </div>
-          </Card>
-        </div>
+        {/* Tabs for Today / History */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="today" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Today's Sessions
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Session History
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Today's Sessions List */}
-        <Card className="mb-8 border-none p-6 shadow-medium">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-card-foreground">
-            <BookOpen className="h-5 w-5 text-primary" />
-            Today's Sessions
-          </h2>
-          <div className="space-y-3">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-soft sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-card-foreground">{session.courseName}</h3>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      session.type === "online" 
-                        ? "bg-accent/10 text-accent" 
-                        : "bg-primary/10 text-primary"
-                    }`}>
-                      {session.type === "online" ? "Online" : "On-site"}
-                    </span>
+          {/* Today's Sessions Tab */}
+          <TabsContent value="today" className="mt-6">
+            {/* Today's Sessions Overview */}
+            <div className="mb-8 grid gap-4 sm:grid-cols-3">
+              <Card className="border-none p-4 shadow-soft">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-success/10 p-3">
+                    <CheckCircle className="h-6 w-6 text-success" />
                   </div>
-                  <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {session.time}
-                    </span>
-                    <span>{session.location}</span>
+                  <div>
+                    <div className="text-2xl font-bold text-card-foreground">{completedSessions}</div>
+                    <div className="text-sm text-muted-foreground">Completed Sessions</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-sm font-medium text-card-foreground">
-                      {session.presentCount}/{session.totalStudents} Students
+              </Card>
+              <Card className="border-none p-4 shadow-soft">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-primary/10 p-3">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-card-foreground">{inProgressSessions}</div>
+                    <div className="text-sm text-muted-foreground">In Progress</div>
+                  </div>
+                </div>
+              </Card>
+              <Card className="border-none p-4 shadow-soft">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-muted p-3">
+                    <BookOpen className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-card-foreground">{notStartedSessions}</div>
+                    <div className="text-sm text-muted-foreground">Upcoming</div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Today's Sessions List */}
+            <Card className="mb-8 border-none p-6 shadow-medium">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-card-foreground">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Today's Sessions
+              </h2>
+              <div className="space-y-3">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-soft sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-card-foreground">{session.courseName}</h3>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          session.type === "online" 
+                            ? "bg-accent/10 text-accent" 
+                            : "bg-primary/10 text-primary"
+                        }`}>
+                          {session.type === "online" ? "Online" : "On-site"}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {session.time}
+                        </span>
+                        <span>{session.location}</span>
+                      </div>
                     </div>
-                    <div className={`text-xs font-medium ${
-                      session.attendanceStatus === "completed" 
-                        ? "text-success" 
-                        : session.attendanceStatus === "in-progress"
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}>
-                      {session.attendanceStatus === "completed" && "✓ Completed"}
-                      {session.attendanceStatus === "in-progress" && "● In Progress"}
-                      {session.attendanceStatus === "not-started" && "○ Not Started"}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-card-foreground">
+                          {session.presentCount}/{session.totalStudents} Students
+                        </div>
+                        <div className={`text-xs font-medium ${
+                          session.attendanceStatus === "completed" 
+                            ? "text-success" 
+                            : session.attendanceStatus === "in-progress"
+                            ? "text-primary"
+                            : "text-muted-foreground"
+                        }`}>
+                          {session.attendanceStatus === "completed" && "✓ Completed"}
+                          {session.attendanceStatus === "in-progress" && "● In Progress"}
+                          {session.attendanceStatus === "not-started" && "○ Not Started"}
+                        </div>
+                      </div>
+                      {session.attendanceStatus !== "completed" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleStartAttendance(session)}
+                          disabled={isActive}
+                          className={session.attendanceStatus === "in-progress" ? "bg-primary" : "bg-gradient-primary"}
+                        >
+                          <QrCode className="mr-1 h-4 w-4" />
+                          {session.attendanceStatus === "in-progress" ? "Continue" : "Start"}
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  {session.attendanceStatus !== "completed" && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStartAttendance(session)}
-                      disabled={isActive}
-                      className={session.attendanceStatus === "in-progress" ? "bg-primary" : "bg-gradient-primary"}
+                ))}
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Session History Tab */}
+          <TabsContent value="history" className="mt-6">
+            {/* Filters */}
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Filter by:</span>
+              </div>
+              <Select value={courseFilter} onValueChange={setCourseFilter}>
+                <SelectTrigger className="w-[250px]">
+                  <SelectValue placeholder="All Courses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Courses</SelectItem>
+                  {MOCK_COURSES.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Past Sessions List */}
+            <Card className="border-none p-6 shadow-medium">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-card-foreground">
+                <History className="h-5 w-5 text-primary" />
+                Previous Sessions ({filteredPastSessions.length})
+              </h2>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                {filteredPastSessions.map((session) => {
+                  const attendanceRate = ((session.presentCount + session.excusedCount) / session.totalStudents * 100).toFixed(0);
+                  return (
+                    <div
+                      key={session.id}
+                      className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-soft sm:flex-row sm:items-center sm:justify-between cursor-pointer"
+                      onClick={() => setSelectedPastSession(session)}
                     >
-                      <QrCode className="mr-1 h-4 w-4" />
-                      {session.attendanceStatus === "in-progress" ? "Continue" : "Start"}
-                    </Button>
-                  )}
-                </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-card-foreground">{session.courseName}</h3>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            session.type === "online" 
+                              ? "bg-accent/10 text-accent" 
+                              : "bg-primary/10 text-primary"
+                          }`}>
+                            {session.type === "online" ? "Online" : "On-site"}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {format(session.date, "EEE, MMM d, yyyy")}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {session.time}
+                          </span>
+                          <span>{session.location}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="flex items-center gap-1 text-success">
+                            <CheckCircle className="h-4 w-4" />
+                            {session.presentCount}
+                          </span>
+                          <span className="flex items-center gap-1 text-warning">
+                            <AlertCircle className="h-4 w-4" />
+                            {session.excusedCount}
+                          </span>
+                          <span className="flex items-center gap-1 text-destructive">
+                            <XCircle className="h-4 w-4" />
+                            {session.absentCount}
+                          </span>
+                        </div>
+                        <div className={`text-sm font-semibold ${
+                          Number(attendanceRate) >= 80 ? "text-success" : 
+                          Number(attendanceRate) >= 60 ? "text-warning" : "text-destructive"
+                        }`}>
+                          {attendanceRate}%
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleExportSession(session);
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </Card>
-
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Full Screen Attendance Dialog */}
@@ -390,11 +674,16 @@ const FacultyDashboard = () => {
             {/* Right Side - Stats & Students (3 cols) */}
             <div className="lg:col-span-3 flex flex-col overflow-hidden">
               {/* Attendance Summary */}
-              <div className="grid grid-cols-3 gap-3 p-4 border-b bg-card">
+              <div className="grid grid-cols-4 gap-3 p-4 border-b bg-card">
                 <div className="rounded-lg bg-success/10 p-3 text-center">
                   <CheckCircle className="mx-auto mb-1 h-5 w-5 text-success" />
                   <div className="text-2xl font-bold text-success">{presentCount}</div>
                   <div className="text-xs text-muted-foreground">Present</div>
+                </div>
+                <div className="rounded-lg bg-warning/10 p-3 text-center">
+                  <AlertCircle className="mx-auto mb-1 h-5 w-5 text-warning" />
+                  <div className="text-2xl font-bold text-warning">{excusedCount}</div>
+                  <div className="text-xs text-muted-foreground">Excused</div>
                 </div>
                 <div className="rounded-lg bg-muted p-3 text-center">
                   <Clock className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
@@ -426,6 +715,8 @@ const FacultyDashboard = () => {
                       className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
                         student.status === "present" 
                           ? "bg-success/5 border-success/20" 
+                          : student.status === "excused"
+                          ? "bg-warning/5 border-warning/20"
                           : "bg-card hover:shadow-soft"
                       }`}
                     >
@@ -436,30 +727,61 @@ const FacultyDashboard = () => {
                               ? "bg-success"
                               : student.status === "absent"
                               ? "bg-destructive"
+                              : student.status === "excused"
+                              ? "bg-warning"
                               : "bg-muted-foreground"
                           }`}
                         />
-                        <span className="font-medium text-card-foreground">{student.name}</span>
+                        <div>
+                          <span className="font-medium text-card-foreground">{student.name}</span>
+                          {student.isManualOverride && student.overrideReason && (
+                            <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {student.status === "present" && (
-                          <span className="flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
-                            <CheckCircle className="h-3.5 w-3.5" />
-                            Present
-                          </span>
-                        )}
-                        {student.status === "absent" && (
-                          <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded-full">
-                            <XCircle className="h-3.5 w-3.5" />
-                            Absent
-                          </span>
-                        )}
-                        {student.status === "pending" && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3.5 w-3.5" />
-                            Waiting...
-                          </span>
-                        )}
+                        {getStatusBadge(student.status, student.isManualOverride)}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem 
+                              onClick={() => handleOverrideAttendance(student.id, "present")}
+                              className="text-success"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Mark Present
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleOverrideAttendance(student.id, "excused", "Manual override")}
+                              className="text-warning"
+                            >
+                              <AlertCircle className="mr-2 h-4 w-4" />
+                              Mark Excused
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleOverrideAttendance(student.id, "absent")}
+                              className="text-destructive"
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Mark Absent
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleOverrideAttendance(student.id, "excused", "Medical appointment")}
+                            >
+                              Medical Excuse
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleOverrideAttendance(student.id, "excused", "Official event")}
+                            >
+                              Official Event
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   ))}
@@ -500,6 +822,103 @@ const FacultyDashboard = () => {
             </div>
           )}
 
+        </DialogContent>
+      </Dialog>
+
+      {/* Past Session Detail Dialog */}
+      <Dialog open={!!selectedPastSession} onOpenChange={(open) => !open && setSelectedPastSession(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selectedPastSession?.courseName}
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                selectedPastSession?.type === "online" 
+                  ? "bg-accent/10 text-accent" 
+                  : "bg-primary/10 text-primary"
+              }`}>
+                {selectedPastSession?.type === "online" ? "Online" : "On-site"}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {selectedPastSession && format(selectedPastSession.date, "EEEE, MMMM d, yyyy")}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {selectedPastSession?.time}
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {selectedPastSession?.location}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Stats Summary */}
+          <div className="grid grid-cols-4 gap-3 py-4 border-b">
+            <div className="rounded-lg bg-success/10 p-3 text-center">
+              <div className="text-2xl font-bold text-success">{selectedPastSession?.presentCount}</div>
+              <div className="text-xs text-muted-foreground">Present</div>
+            </div>
+            <div className="rounded-lg bg-warning/10 p-3 text-center">
+              <div className="text-2xl font-bold text-warning">{selectedPastSession?.excusedCount}</div>
+              <div className="text-xs text-muted-foreground">Excused</div>
+            </div>
+            <div className="rounded-lg bg-destructive/10 p-3 text-center">
+              <div className="text-2xl font-bold text-destructive">{selectedPastSession?.absentCount}</div>
+              <div className="text-xs text-muted-foreground">Absent</div>
+            </div>
+            <div className="rounded-lg bg-muted p-3 text-center">
+              <div className="text-2xl font-bold text-muted-foreground">{selectedPastSession?.totalStudents}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
+            </div>
+          </div>
+
+          {/* Student List */}
+          <div className="flex-1 overflow-y-auto space-y-2 py-4">
+            {selectedPastSession?.students.map((student) => (
+              <div
+                key={student.id}
+                className={`flex items-center justify-between rounded-lg border p-3 ${
+                  student.status === "present" 
+                    ? "bg-success/5 border-success/20" 
+                    : student.status === "excused"
+                    ? "bg-warning/5 border-warning/20"
+                    : "bg-card"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      student.status === "present"
+                        ? "bg-success"
+                        : student.status === "absent"
+                        ? "bg-destructive"
+                        : student.status === "excused"
+                        ? "bg-warning"
+                        : "bg-muted-foreground"
+                    }`}
+                  />
+                  <div>
+                    <span className="font-medium text-card-foreground">{student.name}</span>
+                    {student.isManualOverride && student.overrideReason && (
+                      <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
+                    )}
+                  </div>
+                </div>
+                {getStatusBadge(student.status, student.isManualOverride)}
+              </div>
+            ))}
+          </div>
+
+          {/* Export Button */}
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => selectedPastSession && handleExportSession(selectedPastSession)}>
+              <Download className="mr-2 h-4 w-4" />
+              Export to CSV
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
