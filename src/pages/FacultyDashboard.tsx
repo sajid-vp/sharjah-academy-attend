@@ -42,6 +42,7 @@ import {
 
 interface Student {
   id: string;
+  ssn: string;
   name: string;
   status: "present" | "absent" | "pending" | "excused";
   isManualOverride?: boolean;
@@ -90,14 +91,14 @@ const MOCK_SESSIONS: Session[] = [
 ];
 
 const MOCK_STUDENTS: Student[] = [
-  { id: "S001", name: "Abdulla Ahmed Hasan", status: "pending" },
-  { id: "S002", name: "Saed Nasser Saeed", status: "pending" },
-  { id: "S003", name: "Salem Ali Salem", status: "pending" },
-  { id: "S004", name: "Saif Abdulla Salem", status: "pending" },
-  { id: "S005", name: "Mohammed Ahmed Moosa", status: "pending" },
-  { id: "S006", name: "Abdulla Sarhan Mohammed", status: "pending" },
-  { id: "S007", name: "Yousef Saeed Bakhit", status: "pending" },
-  { id: "S008", name: "Saoud Abdulrahman Saeed", status: "pending" },
+  { id: "S001", ssn: "SEA-2024-001", name: "Abdulla Ahmed Hasan", status: "pending" },
+  { id: "S002", ssn: "SEA-2024-002", name: "Saed Nasser Saeed", status: "pending" },
+  { id: "S003", ssn: "SEA-2024-003", name: "Salem Ali Salem", status: "pending" },
+  { id: "S004", ssn: "SEA-2024-004", name: "Saif Abdulla Salem", status: "pending" },
+  { id: "S005", ssn: "SEA-2024-005", name: "Mohammed Ahmed Moosa", status: "pending" },
+  { id: "S006", ssn: "SEA-2024-006", name: "Abdulla Sarhan Mohammed", status: "pending" },
+  { id: "S007", ssn: "SEA-2024-007", name: "Yousef Saeed Bakhit", status: "pending" },
+  { id: "S008", ssn: "SEA-2024-008", name: "Saoud Abdulrahman Saeed", status: "pending" },
 ];
 
 // Generate mock past sessions
@@ -136,6 +137,7 @@ const generatePastSessions = (): PastSession[] => {
         
         return {
           id: `S${String(sIdx + 1).padStart(3, "0")}`,
+          ssn: `SEA-2024-${String(sIdx + 1).padStart(3, "0")}`,
           name: MOCK_STUDENTS[sIdx % MOCK_STUDENTS.length].name,
           status,
           isManualOverride,
@@ -897,8 +899,9 @@ const FacultyDashboard = () => {
                               : "bg-muted-foreground"
                           }`}
                         />
-                        <div>
+                      <div>
                           <span className="font-medium text-card-foreground">{student.name}</span>
+                          <p className="text-xs text-muted-foreground">{student.ssn}</p>
                           {student.isManualOverride && student.overrideReason && (
                             <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
                           )}
@@ -1097,6 +1100,7 @@ const FacultyDashboard = () => {
                   />
                   <div>
                     <span className="font-medium text-card-foreground">{student.name}</span>
+                    <p className="text-xs text-muted-foreground">{student.ssn}</p>
                     {student.isManualOverride && student.overrideReason && (
                       <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
                     )}
