@@ -288,9 +288,23 @@ const FacultyDashboard = () => {
                   </span>
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                Session Active
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                  Session Active
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowQR(false);
+                    setIsActive(false);
+                    toast.info("Attendance session ended");
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  End Session
+                </Button>
               </div>
             </div>
           </DialogHeader>
@@ -396,22 +410,10 @@ const FacultyDashboard = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+          <div className="px-6 py-3 border-t bg-muted/30 flex justify-center items-center">
             <p className="text-xs text-muted-foreground">
               QR code will expire when timer reaches 0
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setShowQR(false);
-                setIsActive(false);
-                toast.info("Attendance session ended");
-              }}
-            >
-              <X className="mr-2 h-4 w-4" />
-              End Session
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
