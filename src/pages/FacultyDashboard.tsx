@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X } from "lucide-react";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -306,7 +306,8 @@ const FacultyDashboard = () => {
             onMouseDown={handleMouseDown}
           >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex items-center gap-3">
+                <GripHorizontal className="h-5 w-5 text-muted-foreground" />
                 <DialogTitle className="text-xl font-bold">{selectedSession?.courseName}</DialogTitle>
                 <DialogDescription className="flex items-center gap-4 mt-1">
                   <span className="flex items-center gap-1">
