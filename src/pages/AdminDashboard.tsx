@@ -100,14 +100,14 @@ interface Course {
 
 // Mock data
 const MOCK_STUDENTS: Student[] = [
-  { id: "S001", ssn: "SEA-2024-001", name: "Abdulla Ahmed Hasan", email: "abdulla.hasan@sea.edu", totalClasses: 45, attendedClasses: 42, excusedClasses: 2, attendanceRate: 97.8, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 100 }, { id: "CS201", name: "Data Structures", rate: 95 }] },
-  { id: "S002", ssn: "SEA-2024-002", name: "Saed Nasser Saeed", email: "saed.saeed@sea.edu", totalClasses: 45, attendedClasses: 38, excusedClasses: 3, attendanceRate: 91.1, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 88 }, { id: "CS301", name: "Web Development", rate: 94 }] },
-  { id: "S003", ssn: "SEA-2024-003", name: "Salem Ali Salem", email: "salem.salem@sea.edu", totalClasses: 45, attendedClasses: 30, excusedClasses: 5, attendanceRate: 77.8, lowAttendanceFlag: true, courses: [{ id: "CS101", name: "Intro to Programming", rate: 72 }, { id: "CS201", name: "Data Structures", rate: 83 }] },
-  { id: "S004", ssn: "SEA-2024-004", name: "Saif Abdulla Salem", email: "saif.salem@sea.edu", totalClasses: 45, attendedClasses: 44, excusedClasses: 1, attendanceRate: 100, lowAttendanceFlag: false, courses: [{ id: "CS201", name: "Data Structures", rate: 100 }, { id: "CS301", name: "Web Development", rate: 100 }] },
-  { id: "S005", ssn: "SEA-2024-005", name: "Mohammed Ahmed Moosa", email: "mohammed.moosa@sea.edu", totalClasses: 45, attendedClasses: 28, excusedClasses: 2, attendanceRate: 66.7, lowAttendanceFlag: true, courses: [{ id: "CS101", name: "Intro to Programming", rate: 60 }, { id: "CS201", name: "Data Structures", rate: 73 }] },
-  { id: "S006", ssn: "SEA-2024-006", name: "Abdulla Sarhan Mohammed", email: "abdulla.mohammed@sea.edu", totalClasses: 45, attendedClasses: 43, excusedClasses: 2, attendanceRate: 100, lowAttendanceFlag: false, courses: [{ id: "CS301", name: "Web Development", rate: 98 }] },
-  { id: "S007", ssn: "SEA-2024-007", name: "Yousef Saeed Bakhit", email: "yousef.bakhit@sea.edu", totalClasses: 45, attendedClasses: 35, excusedClasses: 4, attendanceRate: 86.7, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 85 }, { id: "CS301", name: "Web Development", rate: 88 }] },
-  { id: "S008", ssn: "SEA-2024-008", name: "Saoud Abdulrahman Saeed", email: "saoud.saeed@sea.edu", totalClasses: 45, attendedClasses: 26, excusedClasses: 1, attendanceRate: 60, lowAttendanceFlag: true, courses: [{ id: "CS201", name: "Data Structures", rate: 55 }, { id: "CS301", name: "Web Development", rate: 65 }] },
+  { id: "S001", ssn: "SSN10011", name: "Abdulla Ahmed Hasan", email: "abdulla.hasan@sea.edu", totalClasses: 45, attendedClasses: 42, excusedClasses: 2, attendanceRate: 97.8, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 100 }, { id: "CS201", name: "Data Structures", rate: 95 }] },
+  { id: "S002", ssn: "SSN10012", name: "Saed Nasser Saeed", email: "saed.saeed@sea.edu", totalClasses: 45, attendedClasses: 38, excusedClasses: 3, attendanceRate: 91.1, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 88 }, { id: "CS301", name: "Web Development", rate: 94 }] },
+  { id: "S003", ssn: "SSN10013", name: "Salem Ali Salem", email: "salem.salem@sea.edu", totalClasses: 45, attendedClasses: 30, excusedClasses: 5, attendanceRate: 77.8, lowAttendanceFlag: true, courses: [{ id: "CS101", name: "Intro to Programming", rate: 72 }, { id: "CS201", name: "Data Structures", rate: 83 }] },
+  { id: "S004", ssn: "SSN10014", name: "Saif Abdulla Salem", email: "saif.salem@sea.edu", totalClasses: 45, attendedClasses: 44, excusedClasses: 1, attendanceRate: 100, lowAttendanceFlag: false, courses: [{ id: "CS201", name: "Data Structures", rate: 100 }, { id: "CS301", name: "Web Development", rate: 100 }] },
+  { id: "S005", ssn: "SSN10015", name: "Mohammed Ahmed Moosa", email: "mohammed.moosa@sea.edu", totalClasses: 45, attendedClasses: 28, excusedClasses: 2, attendanceRate: 66.7, lowAttendanceFlag: true, courses: [{ id: "CS101", name: "Intro to Programming", rate: 60 }, { id: "CS201", name: "Data Structures", rate: 73 }] },
+  { id: "S006", ssn: "SSN10016", name: "Abdulla Sarhan Mohammed", email: "abdulla.mohammed@sea.edu", totalClasses: 45, attendedClasses: 43, excusedClasses: 2, attendanceRate: 100, lowAttendanceFlag: false, courses: [{ id: "CS301", name: "Web Development", rate: 98 }] },
+  { id: "S007", ssn: "SSN10017", name: "Yousef Saeed Bakhit", email: "yousef.bakhit@sea.edu", totalClasses: 45, attendedClasses: 35, excusedClasses: 4, attendanceRate: 86.7, lowAttendanceFlag: false, courses: [{ id: "CS101", name: "Intro to Programming", rate: 85 }, { id: "CS301", name: "Web Development", rate: 88 }] },
+  { id: "S008", ssn: "SSN10018", name: "Saoud Abdulrahman Saeed", email: "saoud.saeed@sea.edu", totalClasses: 45, attendedClasses: 26, excusedClasses: 1, attendanceRate: 60, lowAttendanceFlag: true, courses: [{ id: "CS201", name: "Data Structures", rate: 55 }, { id: "CS301", name: "Web Development", rate: 65 }] },
 ];
 
 const MOCK_COURSES: Course[] = [
@@ -307,7 +307,7 @@ const AdminDashboard = () => {
                           </div>
                           <div>
                             <p className="font-medium text-card-foreground">{student.name}</p>
-                            <p className="text-sm text-muted-foreground">SSN: {student.ssn} • {student.email}</p>
+                            <p className="text-sm text-muted-foreground">{student.ssn} • {student.email}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -438,7 +438,7 @@ const AdminDashboard = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">SSN: {student.ssn} • {student.email}</p>
+                          <p className="text-sm text-muted-foreground">{student.ssn} • {student.email}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -683,7 +683,7 @@ const AdminDashboard = () => {
                     )}
                   </div>
                   <p className="text-sm font-normal text-muted-foreground">
-                    SSN: {selectedStudent?.ssn} • {selectedStudent?.email}
+                    {selectedStudent?.ssn} • {selectedStudent?.email}
                   </p>
                 </div>
               </DialogTitle>
