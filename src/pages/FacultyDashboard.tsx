@@ -179,6 +179,8 @@ const FacultyDashboard = () => {
   const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
   const [excuseStudentId, setExcuseStudentId] = useState<string | null>(null);
   const [excuseReason, setExcuseReason] = useState("");
+  const [excuseContext, setExcuseContext] = useState<"live" | "past">("live");
+  const [pastSessionStudents, setPastSessionStudents] = useState<Student[]>([]);
   const today = new Date();
 
   // Draggable dialog state
@@ -284,6 +286,41 @@ const FacultyDashboard = () => {
     );
     const student = students.find((s) => s.id === studentId);
     toast.success(`${student?.name} marked as ${newStatus}${reason ? ` (${reason})` : ""}`);
+  };
+
+  const handlePastSessionOverride = (studentId: string, newStatus: Student["status"], reason?: string) => {
+    setPastSessionStudents((prev) =>
+      prev.map((student) =>
+        student.id === studentId
+          ? { ...student, status: newStatus, isManualOverride: true, overrideReason: reason }
+          : student
+      )
+    );
+    const student = pastSessionStudents.find((s) => s.id === studentId);
+    toast.success(`${student?.name} marked as ${newStatus}${reason ? ` (${reason})` : ""} (past session)`);
+    
+    // Update counts in the selected past session
+    if (selectedPastSession) {
+      const updatedStudents = pastSessionStudents.map((s) =>
+        s.id === studentId ? { ...s, status: newStatus, isManualOverride: true, overrideReason: reason } : s
+      );
+      const presentCount = updatedStudents.filter((s) => s.status === "present").length;
+      const excusedCount = updatedStudents.filter((s) => s.status === "excused").length;
+      const absentCount = updatedStudents.filter((s) => s.status === "absent").length;
+      setSelectedPastSession({
+        ...selectedPastSession,
+        presentCount,
+        excusedCount,
+        absentCount,
+        students: updatedStudents,
+      });
+    }
+  };
+
+  const openPastSessionExcuseDialog = (studentId: string) => {
+    setExcuseStudentId(studentId);
+    setExcuseContext("past");
+    setExcuseDialogOpen(true);
   };
 
   const handleExportSession = (session: PastSession) => {
@@ -940,7 +977,17 @@ const FacultyDashboard = () => {
       </Dialog>
 
       {/* Past Session Detail Dialog */}
-      <Dialog open={!!selectedPastSession} onOpenChange={(open) => !open && setSelectedPastSession(null)}>
+      <Dialog 
+        open={!!selectedPastSession} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedPastSession(null);
+            setPastSessionStudents([]);
+          } else if (selectedPastSession) {
+            setPastSessionStudents([...selectedPastSession.students]);
+          }
+        }}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
@@ -972,15 +1019,27 @@ const FacultyDashboard = () => {
           {/* Stats Summary */}
           <div className="grid grid-cols-4 gap-3 py-4 border-b">
             <div className="rounded-lg bg-success/10 p-3 text-center">
-              <div className="text-2xl font-bold text-success">{selectedPastSession?.presentCount}</div>
+              <div className="text-2xl font-bold text-success">
+                {pastSessionStudents.length > 0 
+                  ? pastSessionStudents.filter(s => s.status === "present").length 
+                  : selectedPastSession?.presentCount}
+              </div>
               <div className="text-xs text-muted-foreground">Present</div>
             </div>
             <div className="rounded-lg bg-warning/10 p-3 text-center">
-              <div className="text-2xl font-bold text-warning">{selectedPastSession?.excusedCount}</div>
+              <div className="text-2xl font-bold text-warning">
+                {pastSessionStudents.length > 0 
+                  ? pastSessionStudents.filter(s => s.status === "excused").length 
+                  : selectedPastSession?.excusedCount}
+              </div>
               <div className="text-xs text-muted-foreground">Excused</div>
             </div>
             <div className="rounded-lg bg-destructive/10 p-3 text-center">
-              <div className="text-2xl font-bold text-destructive">{selectedPastSession?.absentCount}</div>
+              <div className="text-2xl font-bold text-destructive">
+                {pastSessionStudents.length > 0 
+                  ? pastSessionStudents.filter(s => s.status === "absent").length 
+                  : selectedPastSession?.absentCount}
+              </div>
               <div className="text-xs text-muted-foreground">Absent</div>
             </div>
             <div className="rounded-lg bg-muted p-3 text-center">
@@ -991,7 +1050,7 @@ const FacultyDashboard = () => {
 
           {/* Student List */}
           <div className="flex-1 overflow-y-auto space-y-2 py-4">
-            {selectedPastSession?.students.map((student) => (
+            {(pastSessionStudents.length > 0 ? pastSessionStudents : selectedPastSession?.students || []).map((student) => (
               <div
                 key={student.id}
                 className={`flex items-center justify-between rounded-lg border p-3 ${
@@ -1021,7 +1080,40 @@ const FacultyDashboard = () => {
                     )}
                   </div>
                 </div>
-                {getStatusBadge(student.status, student.isManualOverride)}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(student.status, student.isManualOverride)}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handlePastSessionOverride(student.id, "present")}
+                        disabled={student.status === "present"}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4 text-success" />
+                        Mark Present
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handlePastSessionOverride(student.id, "absent")}
+                        disabled={student.status === "absent"}
+                      >
+                        <XCircle className="mr-2 h-4 w-4 text-destructive" />
+                        Mark Absent
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => openPastSessionExcuseDialog(student.id)}
+                        disabled={student.status === "excused"}
+                      >
+                        <AlertCircle className="mr-2 h-4 w-4 text-warning" />
+                        Mark Excused
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             ))}
           </div>
@@ -1042,6 +1134,7 @@ const FacultyDashboard = () => {
         if (!open) {
           setExcuseStudentId(null);
           setExcuseReason("");
+          setExcuseContext("live");
         }
       }}>
         <DialogContent className="max-w-md">
@@ -1051,7 +1144,11 @@ const FacultyDashboard = () => {
               Mark as Excused
             </DialogTitle>
             <DialogDescription>
-              Enter the reason for excusing {students.find(s => s.id === excuseStudentId)?.name}
+              Enter the reason for excusing {
+                excuseContext === "live" 
+                  ? students.find(s => s.id === excuseStudentId)?.name
+                  : pastSessionStudents.find(s => s.id === excuseStudentId)?.name
+              }
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1064,10 +1161,15 @@ const FacultyDashboard = () => {
                 onChange={(e) => setExcuseReason(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && excuseReason.trim() && excuseStudentId) {
-                    handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                    if (excuseContext === "live") {
+                      handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                    } else {
+                      handlePastSessionOverride(excuseStudentId, "excused", excuseReason.trim());
+                    }
                     setExcuseDialogOpen(false);
                     setExcuseStudentId(null);
                     setExcuseReason("");
+                    setExcuseContext("live");
                   }
                 }}
               />
@@ -1101,6 +1203,7 @@ const FacultyDashboard = () => {
               setExcuseDialogOpen(false);
               setExcuseStudentId(null);
               setExcuseReason("");
+              setExcuseContext("live");
             }}>
               Cancel
             </Button>
@@ -1108,10 +1211,15 @@ const FacultyDashboard = () => {
               disabled={!excuseReason.trim()}
               onClick={() => {
                 if (excuseStudentId && excuseReason.trim()) {
-                  handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                  if (excuseContext === "live") {
+                    handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                  } else {
+                    handlePastSessionOverride(excuseStudentId, "excused", excuseReason.trim());
+                  }
                   setExcuseDialogOpen(false);
                   setExcuseStudentId(null);
                   setExcuseReason("");
+                  setExcuseContext("live");
                 }
               }}
             >
