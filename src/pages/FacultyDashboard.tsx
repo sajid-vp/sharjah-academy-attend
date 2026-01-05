@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal } from "lucide-react";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2 } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -70,6 +70,7 @@ const FacultyDashboard = () => {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const dialogStartPos = useRef({ x: 0, y: 0 });
+  const [isQRMaximized, setIsQRMaximized] = useState(false);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -125,6 +126,17 @@ const FacultyDashboard = () => {
       return () => clearInterval(interval);
     }
   }, [isActive]);
+
+  // Handle ESC key to close maximized QR view
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isQRMaximized) {
+        setIsQRMaximized(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isQRMaximized]);
 
   const handleStartAttendance = (session: Session) => {
     const course = MOCK_COURSES.find((c) => c.id === session.courseId);
@@ -340,8 +352,16 @@ const FacultyDashboard = () => {
             <div className="lg:col-span-2 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-r">
               <div className="relative mb-4">
                 <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-primary opacity-20 blur-xl" />
-              <div className="relative rounded-2xl bg-white p-6 shadow-large">
+                <div className="relative rounded-2xl bg-white p-6 shadow-large">
                   <QRCodeSVG value={qrData} size={280} level="H" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background"
+                    onClick={() => setIsQRMaximized(true)}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               <div className="text-center">
@@ -449,6 +469,32 @@ const FacultyDashboard = () => {
 
         </DialogContent>
       </Dialog>
+
+      {/* Maximized QR Overlay */}
+      {isQRMaximized && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm">
+          <div className="flex flex-col items-center">
+            <div className="relative rounded-3xl bg-white p-8 shadow-2xl">
+              <QRCodeSVG value={qrData} size={420} level="H" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-3 h-10 w-10 bg-muted/80 hover:bg-muted"
+                onClick={() => setIsQRMaximized(false)}
+              >
+                <Minimize2 className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="mt-6 text-center">
+              <div className="text-8xl font-bold text-primary">{timeLeft}s</div>
+              <div className="text-lg text-muted-foreground mt-2">Time remaining</div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-6 text-center">
+              Press <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">ESC</kbd> or click minimize to return
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
