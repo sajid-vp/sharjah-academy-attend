@@ -473,15 +473,21 @@ const FacultyDashboard = () => {
 
       {/* Maximized QR Overlay */}
       {isQRMaximized && showQR && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm">
-          <div className="flex flex-col items-center">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm"
+          onClick={() => setIsQRMaximized(false)}
+        >
+          <div className="flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <div className="relative rounded-3xl bg-white p-8 shadow-2xl">
               <QRCodeSVG value={qrData} size={420} level="H" />
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-3 right-3 h-10 w-10 bg-muted/80 hover:bg-muted"
-                onClick={() => setIsQRMaximized(false)}
+                className="absolute top-3 right-3 h-10 w-10 bg-muted/80 hover:bg-muted z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsQRMaximized(false);
+                }}
               >
                 <Minimize2 className="h-5 w-5" />
               </Button>
