@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen } from "lucide-react";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -255,129 +255,149 @@ const FacultyDashboard = () => {
           </div>
         </Card>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-
-            <Card className="border-none p-6 shadow-medium">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-card-foreground">
-                  Live Attendance Status
-                </h2>
-                {isActive && (
-                  <div className="flex items-center gap-2 text-sm text-primary">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                    Session Active
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-6 grid grid-cols-3 gap-4">
-                <div className="rounded-lg bg-success/10 p-4 text-center">
-                  <CheckCircle className="mx-auto mb-2 h-6 w-6 text-success" />
-                  <div className="text-2xl font-bold text-success">{presentCount}</div>
-                  <div className="text-sm text-muted-foreground">Present</div>
-                </div>
-                <div className="rounded-lg bg-muted p-4 text-center">
-                  <Clock className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
-                  <div className="text-2xl font-bold text-muted-foreground">{pendingCount}</div>
-                  <div className="text-sm text-muted-foreground">Pending</div>
-                </div>
-                <div className="rounded-lg bg-destructive/10 p-4 text-center">
-                  <XCircle className="mx-auto mb-2 h-6 w-6 text-destructive" />
-                  <div className="text-2xl font-bold text-destructive">{absentCount}</div>
-                  <div className="text-sm text-muted-foreground">Absent</div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {students.map((student) => (
-                  <div
-                    key={student.id}
-                    className="flex items-center justify-between rounded-lg border bg-card p-3 transition-all hover:shadow-soft"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          student.status === "present"
-                            ? "bg-success"
-                            : student.status === "absent"
-                            ? "bg-destructive"
-                            : "bg-muted-foreground"
-                        }`}
-                      />
-                      <span className="font-medium text-card-foreground">{student.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {student.status === "present" && (
-                        <CheckCircle className="h-5 w-5 text-success" />
-                      )}
-                      {student.status === "absent" && (
-                        <XCircle className="h-5 w-5 text-destructive" />
-                      )}
-                      {student.status === "pending" && (
-                        <Clock className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          <div>
-            <Card className="sticky top-8 border-none p-6 shadow-medium">
-              <div className="mb-4 flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold text-card-foreground">Session Info</h2>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-muted-foreground">Date</div>
-                  <div className="font-medium text-card-foreground">
-                    {new Date().toLocaleDateString()}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Time</div>
-                  <div className="font-medium text-card-foreground">
-                    {new Date().toLocaleTimeString()}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Total Students</div>
-                  <div className="font-medium text-card-foreground">{students.length}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Attendance Rate</div>
-                  <div className="font-medium text-card-foreground">
-                    {((presentCount / students.length) * 100).toFixed(0)}%
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
       </div>
 
-      <Dialog open={showQR} onOpenChange={setShowQR}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedSession?.courseName} - Attendance</DialogTitle>
-            <DialogDescription>
-              Students should scan this code within {timeLeft} seconds
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-6 py-6">
-            <div className="relative">
-              <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-primary opacity-20 blur-xl" />
-              <div className="relative rounded-2xl bg-white p-6 shadow-large">
-                <QRCodeSVG value={qrData} size={256} level="H" />
+      {/* Full Screen Attendance Dialog */}
+      <Dialog open={showQR} onOpenChange={(open) => {
+        if (!open) {
+          setShowQR(false);
+          setIsActive(false);
+        }
+      }}>
+        <DialogContent className="max-w-5xl h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl">{selectedSession?.courseName}</DialogTitle>
+                <DialogDescription className="flex items-center gap-4 mt-2">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {selectedSession?.time}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {selectedSession?.location}
+                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    selectedSession?.type === "online" 
+                      ? "bg-accent/10 text-accent" 
+                      : "bg-primary/10 text-primary"
+                  }`}>
+                    {selectedSession?.type === "online" ? "Online" : "On-site"}
+                  </span>
+                </DialogDescription>
               </div>
             </div>
-            <div className="text-center">
-              <div className="mb-2 text-4xl font-bold text-primary">{timeLeft}s</div>
-              <div className="text-sm text-muted-foreground">Time remaining</div>
+          </DialogHeader>
+
+          <div className="grid gap-6 lg:grid-cols-2 py-4">
+            {/* Left Side - QR Code & Timer */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-primary opacity-20 blur-xl" />
+                <div className="relative rounded-2xl bg-white p-6 shadow-large">
+                  <QRCodeSVG value={qrData} size={220} level="H" />
+                </div>
+              </div>
+              <div className="text-center mb-4">
+                <div className="text-5xl font-bold text-primary mb-1">{timeLeft}s</div>
+                <div className="text-sm text-muted-foreground">Time remaining</div>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-primary">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                Session Active - Students can scan now
+              </div>
             </div>
+
+            {/* Right Side - Session Details & Students */}
+            <div className="space-y-4">
+              {/* Attendance Summary */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-lg bg-success/10 p-3 text-center">
+                  <CheckCircle className="mx-auto mb-1 h-5 w-5 text-success" />
+                  <div className="text-xl font-bold text-success">{presentCount}</div>
+                  <div className="text-xs text-muted-foreground">Present</div>
+                </div>
+                <div className="rounded-lg bg-muted p-3 text-center">
+                  <Clock className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
+                  <div className="text-xl font-bold text-muted-foreground">{pendingCount}</div>
+                  <div className="text-xs text-muted-foreground">Pending</div>
+                </div>
+                <div className="rounded-lg bg-destructive/10 p-3 text-center">
+                  <XCircle className="mx-auto mb-1 h-5 w-5 text-destructive" />
+                  <div className="text-xl font-bold text-destructive">{absentCount}</div>
+                  <div className="text-xs text-muted-foreground">Absent</div>
+                </div>
+              </div>
+
+              {/* Students List */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-card-foreground flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    Students ({students.length})
+                  </h3>
+                  <span className="text-sm text-muted-foreground">
+                    {((presentCount / students.length) * 100).toFixed(0)}% attendance
+                  </span>
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                  {students.map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between rounded-lg border bg-card p-3 transition-all hover:shadow-soft"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`h-2 w-2 rounded-full ${
+                            student.status === "present"
+                              ? "bg-success"
+                              : student.status === "absent"
+                              ? "bg-destructive"
+                              : "bg-muted-foreground"
+                          }`}
+                        />
+                        <span className="font-medium text-card-foreground">{student.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {student.status === "present" && (
+                          <span className="flex items-center gap-1 text-xs text-success">
+                            <CheckCircle className="h-4 w-4" />
+                            Present
+                          </span>
+                        )}
+                        {student.status === "absent" && (
+                          <span className="flex items-center gap-1 text-xs text-destructive">
+                            <XCircle className="h-4 w-4" />
+                            Absent
+                          </span>
+                        )}
+                        {student.status === "pending" && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            Waiting...
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowQR(false);
+                setIsActive(false);
+                toast.info("Attendance session ended");
+              }}
+            >
+              <X className="mr-2 h-4 w-4" />
+              End Session
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
