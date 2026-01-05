@@ -378,6 +378,7 @@ const FacultyDashboard = () => {
                 onClick={() => {
                   setShowQR(false);
                   setIsActive(false);
+                  setIsQRMaximized(false);
                   toast.info("Attendance session ended");
                 }}
               >
@@ -471,7 +472,7 @@ const FacultyDashboard = () => {
       </Dialog>
 
       {/* Maximized QR Overlay */}
-      {isQRMaximized && (
+      {isQRMaximized && showQR && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 backdrop-blur-sm">
           <div className="flex flex-col items-center">
             <div className="relative rounded-3xl bg-white p-8 shadow-2xl">
