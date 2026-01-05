@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QRCodeSVG } from "qrcode.react";
@@ -64,6 +64,32 @@ const FacultyDashboard = () => {
   const [isActive, setIsActive] = useState(false);
   const [sessions] = useState<Session[]>(MOCK_SESSIONS);
   const today = new Date();
+
+  // Draggable dialog state
+  const [dialogPosition, setDialogPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const dialogStartPos = useRef({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    dialogStartPos.current = { ...dialogPosition };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStartPos.current.x;
+    const deltaY = e.clientY - dragStartPos.current.y;
+    setDialogPosition({
+      x: dialogStartPos.current.x + deltaX,
+      y: dialogStartPos.current.y + deltaY,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -262,11 +288,23 @@ const FacultyDashboard = () => {
         if (!open) {
           setShowQR(false);
           setIsActive(false);
+          setDialogPosition({ x: 0, y: 0 });
         }
       }}>
-        <DialogContent className="max-w-6xl max-h-[95vh] p-0 overflow-hidden">
-          {/* Header */}
-          <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+        <DialogContent 
+          className="max-w-6xl max-h-[95vh] p-0 overflow-hidden"
+          style={{ 
+            transform: `translate(calc(-50% + ${dialogPosition.x}px), calc(-50% + ${dialogPosition.y}px))`,
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* Header - Draggable */}
+          <DialogHeader 
+            className="px-6 py-4 border-b bg-muted/30 cursor-move select-none"
+            onMouseDown={handleMouseDown}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="text-xl font-bold">{selectedSession?.courseName}</DialogTitle>
