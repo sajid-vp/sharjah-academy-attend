@@ -307,7 +307,7 @@ const AdminDashboard = () => {
                           </div>
                           <div>
                             <p className="font-medium text-card-foreground">{student.name}</p>
-                            <p className="text-sm text-muted-foreground">{student.ssn} • {student.email}</p>
+                            <p className="text-sm text-muted-foreground">SSN: {student.ssn} • {student.email}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -438,7 +438,7 @@ const AdminDashboard = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{student.ssn} • {student.email}</p>
+                          <p className="text-sm text-muted-foreground">SSN: {student.ssn} • {student.email}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-6">
@@ -683,7 +683,7 @@ const AdminDashboard = () => {
                     )}
                   </div>
                   <p className="text-sm font-normal text-muted-foreground">
-                    {selectedStudent?.ssn} • {selectedStudent?.email}
+                    SSN: {selectedStudent?.ssn} • {selectedStudent?.email}
                   </p>
                 </div>
               </DialogTitle>
