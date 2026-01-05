@@ -315,8 +315,8 @@ const FacultyDashboard = () => {
             <div className="lg:col-span-2 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-r">
               <div className="relative mb-4">
                 <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-primary opacity-20 blur-xl" />
-                <div className="relative rounded-2xl bg-white p-5 shadow-large">
-                  <QRCodeSVG value={qrData} size={200} level="H" />
+              <div className="relative rounded-2xl bg-white p-6 shadow-large">
+                  <QRCodeSVG value={qrData} size={280} level="H" />
                 </div>
               </div>
               <div className="text-center">
@@ -409,12 +409,6 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="px-6 py-3 border-t bg-muted/30 flex justify-center items-center">
-            <p className="text-xs text-muted-foreground">
-              QR code will expire when timer reaches 0
-            </p>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
