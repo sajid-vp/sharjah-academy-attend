@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { GraduationCap, QrCode, Users, TrendingUp } from "lucide-react";
+import { GraduationCap, QrCode, Users, TrendingUp, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -22,7 +22,7 @@ const Index = () => {
               Automated QR-based attendance tracking for hybrid academic models. 
               Save time, increase accuracy, and embrace modern education.
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center sm:flex-wrap">
               <Link to="/faculty">
                 <Button size="lg" variant="secondary" className="w-full sm:w-auto shadow-large">
                   <Users className="mr-2 h-5 w-5" />
@@ -33,6 +33,12 @@ const Index = () => {
                 <Button size="lg" variant="outline" className="w-full border-white/20 bg-white/10 text-white hover:bg-white/20 sm:w-auto backdrop-blur-sm">
                   <QrCode className="mr-2 h-5 w-5" />
                   Student Portal
+                </Button>
+              </Link>
+              <Link to="/admin">
+                <Button size="lg" variant="outline" className="w-full border-white/20 bg-white/10 text-white hover:bg-white/20 sm:w-auto backdrop-blur-sm">
+                  <Shield className="mr-2 h-5 w-5" />
+                  Admin Dashboard
                 </Button>
               </Link>
             </div>
