@@ -184,6 +184,7 @@ const FacultyDashboard = () => {
   const [excuseReason, setExcuseReason] = useState("");
   const [excuseContext, setExcuseContext] = useState<"live" | "past">("live");
   const [pastSessionStudents, setPastSessionStudents] = useState<Student[]>([]);
+  const [studentSearchFilter, setStudentSearchFilter] = useState("");
   const today = new Date();
 
   // Draggable dialog state
@@ -733,23 +734,6 @@ const FacultyDashboard = () => {
                             <p>Attendance rate ({session.presentCount + session.excusedCount}/{session.totalStudents})</p>
                           </TooltipContent>
                         </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleExportSession(session);
-                              }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Export to CSV</p>
-                          </TooltipContent>
-                        </Tooltip>
                       </div>
                     </div>
                   );
@@ -1006,6 +990,7 @@ const FacultyDashboard = () => {
           if (!open) {
             setSelectedPastSession(null);
             setPastSessionStudents([]);
+            setStudentSearchFilter("");
           } else if (selectedPastSession) {
             setPastSessionStudents([...selectedPastSession.students]);
           }
@@ -1071,9 +1056,23 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
+          {/* Student Filter */}
+          <div className="py-3">
+            <Input
+              placeholder="Search students by name..."
+              value={studentSearchFilter}
+              onChange={(e) => setStudentSearchFilter(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+
           {/* Student List */}
           <div className="flex-1 overflow-y-auto space-y-2 py-4">
-            {(pastSessionStudents.length > 0 ? pastSessionStudents : selectedPastSession?.students || []).map((student) => (
+            {(pastSessionStudents.length > 0 ? pastSessionStudents : selectedPastSession?.students || [])
+              .filter((student) => 
+                student.name.toLowerCase().includes(studentSearchFilter.toLowerCase())
+              )
+              .map((student) => (
               <div
                 key={student.id}
                 className={`flex items-center justify-between rounded-lg border p-3 ${
