@@ -264,12 +264,13 @@ const FacultyDashboard = () => {
           setIsActive(false);
         }
       }}>
-        <DialogContent className="max-w-5xl h-[90vh] overflow-y-auto">
-          <DialogHeader className="border-b pb-4">
+        <DialogContent className="max-w-6xl max-h-[95vh] p-0 overflow-hidden">
+          {/* Header */}
+          <DialogHeader className="px-6 py-4 border-b bg-muted/30">
             <div className="flex items-center justify-between">
               <div>
-                <DialogTitle className="text-2xl">{selectedSession?.courseName}</DialogTitle>
-                <DialogDescription className="flex items-center gap-4 mt-2">
+                <DialogTitle className="text-xl font-bold">{selectedSession?.courseName}</DialogTitle>
+                <DialogDescription className="flex items-center gap-4 mt-1">
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     {selectedSession?.time}
@@ -287,69 +288,77 @@ const FacultyDashboard = () => {
                   </span>
                 </DialogDescription>
               </div>
+              <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                Session Active
+              </div>
             </div>
           </DialogHeader>
 
-          <div className="grid gap-6 lg:grid-cols-2 py-4">
-            {/* Left Side - QR Code & Timer */}
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative mb-6">
+          {/* Main Content */}
+          <div className="grid lg:grid-cols-5 gap-0 h-[calc(95vh-140px)]">
+            {/* Left Side - QR Code & Timer (2 cols) */}
+            <div className="lg:col-span-2 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-r">
+              <div className="relative mb-4">
                 <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-primary opacity-20 blur-xl" />
-                <div className="relative rounded-2xl bg-white p-6 shadow-large">
-                  <QRCodeSVG value={qrData} size={220} level="H" />
+                <div className="relative rounded-2xl bg-white p-5 shadow-large">
+                  <QRCodeSVG value={qrData} size={200} level="H" />
                 </div>
               </div>
-              <div className="text-center mb-4">
-                <div className="text-5xl font-bold text-primary mb-1">{timeLeft}s</div>
+              <div className="text-center">
+                <div className="text-6xl font-bold text-primary mb-1">{timeLeft}s</div>
                 <div className="text-sm text-muted-foreground">Time remaining</div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-primary">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                Session Active - Students can scan now
-              </div>
+              <p className="text-xs text-muted-foreground mt-4 text-center max-w-[200px]">
+                Students scan this QR code with their device to mark attendance
+              </p>
             </div>
 
-            {/* Right Side - Session Details & Students */}
-            <div className="space-y-4">
+            {/* Right Side - Stats & Students (3 cols) */}
+            <div className="lg:col-span-3 flex flex-col overflow-hidden">
               {/* Attendance Summary */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 p-4 border-b bg-card">
                 <div className="rounded-lg bg-success/10 p-3 text-center">
                   <CheckCircle className="mx-auto mb-1 h-5 w-5 text-success" />
-                  <div className="text-xl font-bold text-success">{presentCount}</div>
+                  <div className="text-2xl font-bold text-success">{presentCount}</div>
                   <div className="text-xs text-muted-foreground">Present</div>
                 </div>
                 <div className="rounded-lg bg-muted p-3 text-center">
                   <Clock className="mx-auto mb-1 h-5 w-5 text-muted-foreground" />
-                  <div className="text-xl font-bold text-muted-foreground">{pendingCount}</div>
+                  <div className="text-2xl font-bold text-muted-foreground">{pendingCount}</div>
                   <div className="text-xs text-muted-foreground">Pending</div>
                 </div>
                 <div className="rounded-lg bg-destructive/10 p-3 text-center">
                   <XCircle className="mx-auto mb-1 h-5 w-5 text-destructive" />
-                  <div className="text-xl font-bold text-destructive">{absentCount}</div>
+                  <div className="text-2xl font-bold text-destructive">{absentCount}</div>
                   <div className="text-xs text-muted-foreground">Absent</div>
                 </div>
               </div>
 
               {/* Students List */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between px-4 py-3 bg-muted/30">
                   <h3 className="font-semibold text-card-foreground flex items-center gap-2">
                     <Users className="h-4 w-4 text-primary" />
                     Students ({students.length})
                   </h3>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm font-medium text-primary">
                     {((presentCount / students.length) * 100).toFixed(0)}% attendance
                   </span>
                 </div>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
                   {students.map((student) => (
                     <div
                       key={student.id}
-                      className="flex items-center justify-between rounded-lg border bg-card p-3 transition-all hover:shadow-soft"
+                      className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
+                        student.status === "present" 
+                          ? "bg-success/5 border-success/20" 
+                          : "bg-card hover:shadow-soft"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`h-2 w-2 rounded-full ${
+                          className={`h-2.5 w-2.5 rounded-full ${
                             student.status === "present"
                               ? "bg-success"
                               : student.status === "absent"
@@ -361,20 +370,20 @@ const FacultyDashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         {student.status === "present" && (
-                          <span className="flex items-center gap-1 text-xs text-success">
-                            <CheckCircle className="h-4 w-4" />
+                          <span className="flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
+                            <CheckCircle className="h-3.5 w-3.5" />
                             Present
                           </span>
                         )}
                         {student.status === "absent" && (
-                          <span className="flex items-center gap-1 text-xs text-destructive">
-                            <XCircle className="h-4 w-4" />
+                          <span className="flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded-full">
+                            <XCircle className="h-3.5 w-3.5" />
                             Absent
                           </span>
                         )}
                         {student.status === "pending" && (
                           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-4 w-4" />
+                            <Clock className="h-3.5 w-3.5" />
                             Waiting...
                           </span>
                         )}
@@ -386,9 +395,14 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
-          <div className="border-t pt-4 flex justify-end">
+          {/* Footer */}
+          <div className="px-6 py-3 border-t bg-muted/30 flex justify-between items-center">
+            <p className="text-xs text-muted-foreground">
+              QR code will expire when timer reaches 0
+            </p>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => {
                 setShowQR(false);
                 setIsActive(false);
