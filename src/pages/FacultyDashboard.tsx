@@ -288,7 +288,7 @@ const FacultyDashboard = () => {
                   </span>
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mr-6">
                 <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
                   <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
                   Session Active
