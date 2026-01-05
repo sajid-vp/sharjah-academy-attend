@@ -7,6 +7,8 @@ import { format, subDays, isAfter, isBefore, startOfDay, endOfDay } from "date-f
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -174,6 +176,9 @@ const FacultyDashboard = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [selectedPastSession, setSelectedPastSession] = useState<PastSession | null>(null);
+  const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
+  const [excuseStudentId, setExcuseStudentId] = useState<string | null>(null);
+  const [excuseReason, setExcuseReason] = useState("");
   const today = new Date();
 
   // Draggable dialog state
@@ -872,7 +877,11 @@ const FacultyDashboard = () => {
                               Mark Present
                             </DropdownMenuItem>
                             <DropdownMenuItem 
-                              onClick={() => handleOverrideAttendance(student.id, "excused", "Manual override")}
+                              onClick={() => {
+                                setExcuseStudentId(student.id);
+                                setExcuseReason("");
+                                setExcuseDialogOpen(true);
+                              }}
                               className="text-warning"
                             >
                               <AlertCircle className="mr-2 h-4 w-4" />
@@ -884,17 +893,6 @@ const FacultyDashboard = () => {
                             >
                               <XCircle className="mr-2 h-4 w-4" />
                               Mark Absent
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleOverrideAttendance(student.id, "excused", "Medical appointment")}
-                            >
-                              Medical Excuse
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleOverrideAttendance(student.id, "excused", "Official event")}
-                            >
-                              Official Event
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1033,6 +1031,91 @@ const FacultyDashboard = () => {
             <Button onClick={() => selectedPastSession && handleExportSession(selectedPastSession)}>
               <Download className="mr-2 h-4 w-4" />
               Export to CSV
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Excuse Reason Dialog */}
+      <Dialog open={excuseDialogOpen} onOpenChange={(open) => {
+        setExcuseDialogOpen(open);
+        if (!open) {
+          setExcuseStudentId(null);
+          setExcuseReason("");
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-warning" />
+              Mark as Excused
+            </DialogTitle>
+            <DialogDescription>
+              Enter the reason for excusing {students.find(s => s.id === excuseStudentId)?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="excuse-reason">Reason</Label>
+              <Input
+                id="excuse-reason"
+                placeholder="e.g., Medical appointment, Family emergency..."
+                value={excuseReason}
+                onChange={(e) => setExcuseReason(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && excuseReason.trim() && excuseStudentId) {
+                    handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                    setExcuseDialogOpen(false);
+                    setExcuseStudentId(null);
+                    setExcuseReason("");
+                  }
+                }}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExcuseReason("Medical appointment")}
+              >
+                Medical
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExcuseReason("Family emergency")}
+              >
+                Family Emergency
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExcuseReason("Official event")}
+              >
+                Official Event
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => {
+              setExcuseDialogOpen(false);
+              setExcuseStudentId(null);
+              setExcuseReason("");
+            }}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!excuseReason.trim()}
+              onClick={() => {
+                if (excuseStudentId && excuseReason.trim()) {
+                  handleOverrideAttendance(excuseStudentId, "excused", excuseReason.trim());
+                  setExcuseDialogOpen(false);
+                  setExcuseStudentId(null);
+                  setExcuseReason("");
+                }
+              }}
+            >
+              Confirm Excuse
             </Button>
           </div>
         </DialogContent>
