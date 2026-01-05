@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen } from "lucide-react";
+import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -20,10 +21,28 @@ interface Student {
   status: "present" | "absent" | "pending";
 }
 
+interface Session {
+  id: string;
+  courseId: string;
+  courseName: string;
+  time: string;
+  location: string;
+  type: "online" | "onsite";
+  attendanceStatus: "not-started" | "in-progress" | "completed";
+  presentCount: number;
+  totalStudents: number;
+}
+
 const MOCK_COURSES = [
   { id: "CS101", name: "Introduction to Programming", crn: "12345" },
   { id: "CS201", name: "Data Structures", crn: "12346" },
   { id: "CS301", name: "Web Development", crn: "12347" },
+];
+
+const MOCK_SESSIONS: Session[] = [
+  { id: "S1", courseId: "CS101", courseName: "Introduction to Programming", time: "08:00 - 09:30", location: "Room 101", type: "onsite", attendanceStatus: "completed", presentCount: 24, totalStudents: 28 },
+  { id: "S2", courseId: "CS201", courseName: "Data Structures", time: "10:00 - 11:30", location: "Lab 3", type: "onsite", attendanceStatus: "in-progress", presentCount: 18, totalStudents: 25 },
+  { id: "S3", courseId: "CS301", courseName: "Web Development", time: "13:00 - 14:30", location: "Online", type: "online", attendanceStatus: "not-started", presentCount: 0, totalStudents: 30 },
 ];
 
 const MOCK_STUDENTS: Student[] = [
@@ -44,6 +63,8 @@ const FacultyDashboard = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
   const [isActive, setIsActive] = useState(false);
+  const [sessions] = useState<Session[]>(MOCK_SESSIONS);
+  const today = new Date();
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -107,6 +128,10 @@ const FacultyDashboard = () => {
   const absentCount = students.filter((s) => s.status === "absent").length;
   const pendingCount = students.filter((s) => s.status === "pending").length;
 
+  const completedSessions = sessions.filter(s => s.attendanceStatus === "completed").length;
+  const inProgressSessions = sessions.filter(s => s.attendanceStatus === "in-progress").length;
+  const notStartedSessions = sessions.filter(s => s.attendanceStatus === "not-started").length;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
@@ -123,16 +148,125 @@ const FacultyDashboard = () => {
                 <p className="text-sm text-muted-foreground">Sharjah Education Academy</p>
               </div>
             </div>
+            <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-primary">{format(today, "EEEE, MMMM d, yyyy")}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Today's Sessions Overview */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          <Card className="border-none p-4 shadow-soft">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-success/10 p-3">
+                <CheckCircle className="h-6 w-6 text-success" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-card-foreground">{completedSessions}</div>
+                <div className="text-sm text-muted-foreground">Completed Sessions</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="border-none p-4 shadow-soft">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-3">
+                <Clock className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-card-foreground">{inProgressSessions}</div>
+                <div className="text-sm text-muted-foreground">In Progress</div>
+              </div>
+            </div>
+          </Card>
+          <Card className="border-none p-4 shadow-soft">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-muted p-3">
+                <BookOpen className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-card-foreground">{notStartedSessions}</div>
+                <div className="text-sm text-muted-foreground">Upcoming</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Today's Sessions List */}
+        <Card className="mb-8 border-none p-6 shadow-medium">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-card-foreground">
+            <BookOpen className="h-5 w-5 text-primary" />
+            Today's Sessions
+          </h2>
+          <div className="space-y-3">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-all hover:shadow-soft sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-card-foreground">{session.courseName}</h3>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      session.type === "online" 
+                        ? "bg-accent/10 text-accent" 
+                        : "bg-primary/10 text-primary"
+                    }`}>
+                      {session.type === "online" ? "Online" : "On-site"}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {session.time}
+                    </span>
+                    <span>{session.location}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-card-foreground">
+                      {session.presentCount}/{session.totalStudents} Students
+                    </div>
+                    <div className={`text-xs font-medium ${
+                      session.attendanceStatus === "completed" 
+                        ? "text-success" 
+                        : session.attendanceStatus === "in-progress"
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}>
+                      {session.attendanceStatus === "completed" && "✓ Completed"}
+                      {session.attendanceStatus === "in-progress" && "● In Progress"}
+                      {session.attendanceStatus === "not-started" && "○ Not Started"}
+                    </div>
+                  </div>
+                  {session.attendanceStatus !== "completed" && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCourse(session.courseId);
+                        handleStartAttendance();
+                      }}
+                      disabled={isActive}
+                      className={session.attendanceStatus === "in-progress" ? "bg-primary" : "bg-gradient-primary"}
+                    >
+                      <QrCode className="mr-1 h-4 w-4" />
+                      {session.attendanceStatus === "in-progress" ? "Continue" : "Start"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <Card className="mb-8 border-none p-6 shadow-medium">
               <h2 className="mb-4 text-xl font-semibold text-card-foreground">
-                Course Selection
+                Quick Start Attendance
               </h2>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Select value={selectedCourse} onValueChange={setSelectedCourse}>
