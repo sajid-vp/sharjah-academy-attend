@@ -901,7 +901,7 @@ const FacultyDashboard = () => {
                         />
                       <div>
                           <span className="font-medium text-card-foreground">{student.name}</span>
-                          <p className="text-xs text-muted-foreground">{student.ssn}</p>
+                          <p className="text-xs text-muted-foreground">SSN: {student.ssn}</p>
                           {student.isManualOverride && student.overrideReason && (
                             <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
                           )}
@@ -1100,7 +1100,7 @@ const FacultyDashboard = () => {
                   />
                   <div>
                     <span className="font-medium text-card-foreground">{student.name}</span>
-                    <p className="text-xs text-muted-foreground">{student.ssn}</p>
+                    <p className="text-xs text-muted-foreground">SSN: {student.ssn}</p>
                     {student.isManualOverride && student.overrideReason && (
                       <p className="text-xs text-muted-foreground">{student.overrideReason}</p>
                     )}
