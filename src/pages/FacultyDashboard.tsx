@@ -76,18 +76,23 @@ interface PastSession {
   students: Student[];
 }
 
+// Faculty Info
+const FACULTY_INFO = {
+  name: "Asma Abdallah",
+  email: "akabdallah@sea.ac.ae",
+};
+
 const MOCK_COURSES = [
-  { id: "CS101", name: "Introduction to Programming", crn: "12345", section: "A" },
-  { id: "CS101-B", name: "Introduction to Programming", crn: "12348", section: "B" },
-  { id: "CS201", name: "Data Structures", crn: "12346", section: "A" },
-  { id: "CS301", name: "Web Development", crn: "12347", section: "A" },
-  { id: "CS301-B", name: "Web Development", crn: "12349", section: "B" },
+  { id: "EDEL9101A-01", name: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", code: "EDEL 9101A", section: "01" },
+  { id: "EDEL9101E-01", name: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", code: "EDEL 9101E", section: "01" },
+  { id: "EDEL9201A-01", name: "EDEL 9201A - 1 الرسالة", code: "EDEL 9201A", section: "01" },
+  { id: "EDEL9201E-01", name: "EDEL 9201E - Educational Leadership Thesis I", code: "EDEL 9201E", section: "01" },
 ];
 
 const MOCK_SESSIONS: Session[] = [
-  { id: "S1", courseId: "CS101", courseName: "Introduction to Programming", time: "08:00 - 09:30", location: "Room 101", type: "onsite", attendanceStatus: "completed", presentCount: 24, totalStudents: 28 },
-  { id: "S2", courseId: "CS201", courseName: "Data Structures", time: "10:00 - 11:30", location: "Lab 3", type: "onsite", attendanceStatus: "in-progress", presentCount: 18, totalStudents: 25 },
-  { id: "S3", courseId: "CS301", courseName: "Web Development", time: "13:00 - 14:30", location: "Online", type: "online", attendanceStatus: "not-started", presentCount: 0, totalStudents: 30 },
+  { id: "S1", courseId: "EDEL9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", time: "17:00 - 19:00", location: "Virtual Room 01", type: "online", attendanceStatus: "completed", presentCount: 5, totalStudents: 6 },
+  { id: "S2", courseId: "EDEL9201A-01", courseName: "EDEL 9201A - 1 الرسالة", time: "17:00 - 19:00", location: "Virtual Room 01", type: "online", attendanceStatus: "in-progress", presentCount: 4, totalStudents: 6 },
+  { id: "S3", courseId: "EDEL9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", time: "17:00 - 19:00", location: "Virtual Room 04", type: "online", attendanceStatus: "not-started", presentCount: 0, totalStudents: 9 },
 ];
 
 const MOCK_STUDENTS: Student[] = [
@@ -99,70 +104,153 @@ const MOCK_STUDENTS: Student[] = [
   { id: "S006", ssn: "SSN10016", name: "Abdulla Sarhan Mohammed", status: "pending" },
   { id: "S007", ssn: "SSN10017", name: "Yousef Saeed Bakhit", status: "pending" },
   { id: "S008", ssn: "SSN10018", name: "Saoud Abdulrahman Saeed", status: "pending" },
+  { id: "S009", ssn: "SSN10019", name: "Khalid Omar Sultan", status: "pending" },
 ];
 
-// Generate mock past sessions
+// Real schedule data for Asma Abdallah - Fall 2025
+interface ScheduleEntry {
+  id: number;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  courseSectionCode: string;
+  courseName: string;
+  courseCode: string;
+  roomName: string;
+  roomNo: string;
+  hasAttendance: boolean;
+  studentEnrolledCount: number;
+  usageType: string;
+}
+
+const SCHEDULE_DATA: ScheduleEntry[] = [
+  { id: 2916, date: new Date("2025-08-25"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2918, date: new Date("2025-09-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2920, date: new Date("2025-09-22"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 4, usageType: "Classroom - Hybrid" },
+  { id: 2922, date: new Date("2025-10-06"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2923, date: new Date("2025-10-13"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2924, date: new Date("2025-10-20"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2927, date: new Date("2025-11-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2929, date: new Date("2025-11-24"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2932, date: new Date("2025-09-01"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2933, date: new Date("2025-09-15"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2934, date: new Date("2025-09-29"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2935, date: new Date("2025-10-27"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2936, date: new Date("2025-11-03"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2937, date: new Date("2025-11-17"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2938, date: new Date("2025-12-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2939, date: new Date("2025-08-27"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2941, date: new Date("2025-09-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2943, date: new Date("2025-09-24"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2945, date: new Date("2025-10-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2946, date: new Date("2025-10-15"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2947, date: new Date("2025-10-22"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2950, date: new Date("2025-11-12"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2952, date: new Date("2025-11-26"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2953, date: new Date("2025-12-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2954, date: new Date("2025-09-03"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2955, date: new Date("2025-09-17"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 2956, date: new Date("2025-10-01"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2957, date: new Date("2025-10-29"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2958, date: new Date("2025-11-05"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2959, date: new Date("2025-11-19"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Virtual Room 01", roomNo: "VR-01", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 2981, date: new Date("2025-08-30"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 5, usageType: "Classroom - Hybrid" },
+  { id: 2983, date: new Date("2025-08-30"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 5, usageType: "Classroom - Hybrid" },
+  { id: 3011, date: new Date("2025-11-08"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 3013, date: new Date("2025-11-08"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3133, date: new Date("2025-08-25"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3134, date: new Date("2025-09-01"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3135, date: new Date("2025-09-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 8, usageType: "Classroom - Hybrid" },
+  { id: 3136, date: new Date("2025-09-15"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3137, date: new Date("2025-09-22"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 8, usageType: "Classroom - Hybrid" },
+  { id: 3138, date: new Date("2025-09-29"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3139, date: new Date("2025-10-06"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3140, date: new Date("2025-10-13"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3141, date: new Date("2025-10-20"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3142, date: new Date("2025-10-27"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3143, date: new Date("2025-11-03"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3144, date: new Date("2025-11-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3145, date: new Date("2025-11-17"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3146, date: new Date("2025-11-24"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3148, date: new Date("2025-12-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3149, date: new Date("2025-11-08"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3151, date: new Date("2025-08-30"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3152, date: new Date("2025-08-27"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3153, date: new Date("2025-09-03"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3154, date: new Date("2025-09-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 8, usageType: "Classroom - Hybrid" },
+  { id: 3155, date: new Date("2025-09-17"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3156, date: new Date("2025-09-24"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 8, usageType: "Classroom - Hybrid" },
+  { id: 3157, date: new Date("2025-10-01"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3158, date: new Date("2025-10-08"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3159, date: new Date("2025-10-15"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3160, date: new Date("2025-10-22"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3161, date: new Date("2025-10-29"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3162, date: new Date("2025-11-05"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3163, date: new Date("2025-11-12"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3164, date: new Date("2025-11-19"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3165, date: new Date("2025-11-26"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3167, date: new Date("2025-12-10"), startTime: "17:00", endTime: "19:00", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Virtual Room 04", roomNo: "VR-04", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+  { id: 3168, date: new Date("2025-11-08"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 3170, date: new Date("2025-08-30"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 4276, date: new Date("2025-10-18"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101A-01", courseName: "EDEL 9101A - اكتشاف وتحديد مشاكل ممارسة القيادة المدرسية", courseCode: "EDEL 9101A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 4277, date: new Date("2025-10-18"), startTime: "08:00", endTime: "10:00", courseSectionCode: "EDEL 9101E-01", courseName: "EDEL 9101E - Discovering & Defining a School Leadership Problem of Practice", courseCode: "EDEL 9101E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 9, usageType: "Classroom - Hybrid" },
+  { id: 4284, date: new Date("2025-10-18"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
+  { id: 4285, date: new Date("2025-10-18"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
+];
+
+// Generate past sessions from real schedule data
 const generatePastSessions = (): PastSession[] => {
-  const sessions: PastSession[] = [];
-  const today = new Date();
-  
-  for (let i = 1; i <= 14; i++) {
-    const date = subDays(today, i);
-    const dayOfWeek = date.getDay();
+  return SCHEDULE_DATA.map((entry) => {
+    const totalStudents = entry.studentEnrolledCount || 6;
+    const presentCount = entry.hasAttendance ? Math.floor(totalStudents * (0.7 + Math.random() * 0.25)) : 0;
+    const excusedCount = entry.hasAttendance ? Math.floor(Math.random() * 2) : 0;
+    const absentCount = totalStudents - presentCount - excusedCount;
     
-    // Skip weekends
-    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
-    
-    MOCK_COURSES.forEach((course, idx) => {
-      const totalStudents = 25 + Math.floor(Math.random() * 10);
-      const presentCount = Math.floor(totalStudents * (0.7 + Math.random() * 0.25));
-      const excusedCount = Math.floor(Math.random() * 3);
-      const absentCount = totalStudents - presentCount - excusedCount;
+    const students: Student[] = Array.from({ length: totalStudents }, (_, sIdx) => {
+      const rand = Math.random();
+      let status: Student["status"];
+      let isManualOverride = false;
+      let overrideReason: string | undefined;
       
-      const students: Student[] = Array.from({ length: totalStudents }, (_, sIdx) => {
-        const rand = Math.random();
-        let status: Student["status"];
-        let isManualOverride = false;
-        let overrideReason: string | undefined;
-        
-        if (rand < 0.75) {
-          status = "present";
-        } else if (rand < 0.85) {
-          status = "excused";
-          isManualOverride = true;
-          overrideReason = ["Medical appointment", "Family emergency", "Official event"][Math.floor(Math.random() * 3)];
-        } else {
-          status = "absent";
-        }
-        
-        return {
-          id: `S${String(sIdx + 1).padStart(3, "0")}`,
-          ssn: `SSN${10011 + sIdx}`,
-          name: MOCK_STUDENTS[sIdx % MOCK_STUDENTS.length].name,
-          status,
-          isManualOverride,
-          overrideReason,
-        };
-      });
+      if (!entry.hasAttendance) {
+        status = "pending";
+      } else if (rand < 0.75) {
+        status = "present";
+      } else if (rand < 0.85) {
+        status = "excused";
+        isManualOverride = true;
+        overrideReason = ["Medical appointment", "Family emergency", "Official event"][Math.floor(Math.random() * 3)];
+      } else {
+        status = "absent";
+      }
       
-      sessions.push({
-        id: `PS-${i}-${idx}`,
-        date,
-        courseId: course.id,
-        courseName: course.name,
-        time: ["08:00 - 09:30", "10:00 - 11:30", "13:00 - 14:30"][idx],
-        location: ["Room 101", "Lab 3", "Online"][idx],
-        type: idx === 2 ? "online" : "onsite",
-        presentCount,
-        excusedCount,
-        absentCount,
-        totalStudents,
-        students,
-      });
+      return {
+        id: `S${String(sIdx + 1).padStart(3, "0")}`,
+        ssn: `SSN${10011 + sIdx}`,
+        name: MOCK_STUDENTS[sIdx % MOCK_STUDENTS.length].name,
+        status,
+        isManualOverride,
+        overrideReason,
+      };
     });
-  }
-  
-  return sessions.sort((a, b) => b.date.getTime() - a.date.getTime());
+    
+    const isOnline = entry.roomName.toLowerCase().includes("virtual");
+    
+    return {
+      id: `PS-${entry.id}`,
+      date: entry.date,
+      courseId: entry.courseSectionCode.replace(/\s+/g, ""),
+      courseName: entry.courseName,
+      time: `${entry.startTime} - ${entry.endTime}`,
+      location: `${entry.roomName} (${entry.roomNo})`,
+      type: (isOnline ? "online" : "onsite") as "online" | "onsite",
+      presentCount,
+      excusedCount,
+      absentCount,
+      totalStudents,
+      students,
+    };
+  }).sort((a, b) => b.date.getTime() - a.date.getTime());
 };
 
 const MOCK_PAST_SESSIONS = generatePastSessions();
@@ -266,7 +354,7 @@ const FacultyDashboard = () => {
     const course = MOCK_COURSES.find((c) => c.id === session.courseId);
     const timestamp = new Date().toISOString();
     const qrContent = JSON.stringify({
-      crn: course?.crn,
+      courseCode: course?.code,
       courseId: session.courseId,
       sessionId: session.id,
       timestamp,
@@ -418,7 +506,7 @@ const FacultyDashboard = () => {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Faculty Dashboard</h1>
+                <h1 className="text-2xl font-bold text-foreground">{FACULTY_INFO.name}</h1>
                 <p className="text-sm text-muted-foreground">Sharjah Education Academy</p>
               </div>
             </div>
