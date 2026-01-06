@@ -939,7 +939,7 @@ const FacultyDashboard = () => {
                   </DialogDescription>
                 </div>
               </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                   selectedSession?.type === "online" 
                     ? "bg-accent/10 text-accent" 
@@ -951,6 +951,18 @@ const FacultyDashboard = () => {
                   <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
                   Session Active
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full hover:bg-muted"
+                  onClick={() => {
+                    setShowQR(false);
+                    setIsActive(false);
+                    setDialogPosition({ x: 0, y: 0 });
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </DialogHeader>
