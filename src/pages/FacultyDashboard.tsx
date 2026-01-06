@@ -924,8 +924,8 @@ const FacultyDashboard = () => {
               <div className="flex items-start gap-3 flex-1 min-w-0">
                 <GripHorizontal className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
                 <div className="flex flex-col gap-1 min-w-0">
-                  <DialogTitle className="text-lg font-bold truncate">
-                    {selectedSession?.courseId}
+                  <DialogTitle className="text-lg font-bold">
+                    {selectedSession?.courseName}
                   </DialogTitle>
                   <DialogDescription className="flex flex-col gap-1 text-sm">
                     <span className="flex items-center gap-1.5">
