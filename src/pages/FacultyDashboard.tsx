@@ -91,17 +91,57 @@ const MOCK_COURSES = [
 
 
 
-const MOCK_STUDENTS: Student[] = [
-  { id: "S001", ssn: "SSN10011", name: "Abdulla Ahmed Hasan", status: "pending" },
-  { id: "S002", ssn: "SSN10012", name: "Saed Nasser Saeed", status: "pending" },
-  { id: "S003", ssn: "SSN10013", name: "Salem Ali Salem", status: "pending" },
-  { id: "S004", ssn: "SSN10014", name: "Saif Abdulla Salem", status: "pending" },
-  { id: "S005", ssn: "SSN10015", name: "Mohammed Ahmed Moosa", status: "pending" },
-  { id: "S006", ssn: "SSN10016", name: "Abdulla Sarhan Mohammed", status: "pending" },
-  { id: "S007", ssn: "SSN10017", name: "Yousef Saeed Bakhit", status: "pending" },
-  { id: "S008", ssn: "SSN10018", name: "Saoud Abdulrahman Saeed", status: "pending" },
-  { id: "S009", ssn: "SSN10019", name: "Khalid Omar Sultan", status: "pending" },
-];
+// Course registrations by section - Spring 2026
+const COURSE_REGISTRATIONS: Record<string, Student[]> = {
+  "EDEL9101E-01": [
+    { id: "S001", ssn: "SSN100935", name: "Khadija Abdulla Mohammed Obaid Alteneiji", status: "pending" },
+    { id: "S002", ssn: "SSN100934", name: "Shaimaa Abdulla Rashed Zayed Hayaie", status: "pending" },
+    { id: "S003", ssn: "SSN100932", name: "Halima Mohammed Sulaiman Salem Almahri", status: "pending" },
+    { id: "S004", ssn: "SSN100930", name: "Zainab Salem Ebrahim Taher Alhashmi", status: "pending" },
+    { id: "S005", ssn: "SSN100927", name: "Fatema Mahfoodh Mohammed Ali Alshehhi", status: "pending" },
+    { id: "S006", ssn: "SSN100899", name: "Shamesa Abdulla Aziz Alkhanboli Alshehhi", status: "pending" },
+    { id: "S007", ssn: "SSN100894", name: "Zahra Abdulqader Rajab Alkassar", status: "pending" },
+    { id: "S008", ssn: "SSN100914", name: "Sereen Tariq Shehadeh Aldababneh", status: "pending" },
+    { id: "S009", ssn: "SSN100828", name: "Amna Matar Khalifa Bindesmal Almazrouei", status: "pending" },
+  ],
+  "EDEL9201A-01": [
+    { id: "S001", ssn: "SSN100933", name: "Fatema Ali Abdulla Ewhaid Alshemeili", status: "pending" },
+    { id: "S002", ssn: "SSN100929", name: "Eiman Rashed Ali Alyateem Alnaqbi", status: "pending" },
+    { id: "S003", ssn: "SSN100925", name: "Aysha Mohamed Matar Abdalla Almesafri", status: "pending" },
+    { id: "S004", ssn: "SSN100905", name: "Badreyya Mohammed Jumah Almalaay Alnaqbi", status: "pending" },
+    { id: "S005", ssn: "SSN100896", name: "Fatima Rashid Saeed Alkaabi", status: "pending" },
+    { id: "S006", ssn: "SSN100922", name: "Wafa Saeed Rashed Saed Alhebsi", status: "pending" },
+    { id: "S007", ssn: "SSN100101", name: "Jawaher Khalfan Saif Alnaddas Alketbi", status: "pending" },
+  ],
+  // Arabic sections share the same students as their English counterparts initially
+  "EDEL9101A-01": [
+    { id: "S001", ssn: "SSN100935", name: "Khadija Abdulla Mohammed Obaid Alteneiji", status: "pending" },
+    { id: "S002", ssn: "SSN100934", name: "Shaimaa Abdulla Rashed Zayed Hayaie", status: "pending" },
+    { id: "S003", ssn: "SSN100932", name: "Halima Mohammed Sulaiman Salem Almahri", status: "pending" },
+    { id: "S004", ssn: "SSN100930", name: "Zainab Salem Ebrahim Taher Alhashmi", status: "pending" },
+    { id: "S005", ssn: "SSN100927", name: "Fatema Mahfoodh Mohammed Ali Alshehhi", status: "pending" },
+    { id: "S006", ssn: "SSN100899", name: "Shamesa Abdulla Aziz Alkhanboli Alshehhi", status: "pending" },
+  ],
+  "EDEL9201E-01": [
+    { id: "S001", ssn: "SSN100933", name: "Fatema Ali Abdulla Ewhaid Alshemeili", status: "pending" },
+    { id: "S002", ssn: "SSN100929", name: "Eiman Rashed Ali Alyateem Alnaqbi", status: "pending" },
+    { id: "S003", ssn: "SSN100925", name: "Aysha Mohamed Matar Abdalla Almesafri", status: "pending" },
+    { id: "S004", ssn: "SSN100905", name: "Badreyya Mohammed Jumah Almalaay Alnaqbi", status: "pending" },
+    { id: "S005", ssn: "SSN100896", name: "Fatima Rashid Saeed Alkaabi", status: "pending" },
+    { id: "S006", ssn: "SSN100922", name: "Wafa Saeed Rashed Saed Alhebsi", status: "pending" },
+    { id: "S007", ssn: "SSN100101", name: "Jawaher Khalfan Saif Alnaddas Alketbi", status: "pending" },
+    { id: "S008", ssn: "SSN100914", name: "Sereen Tariq Shehadeh Aldababneh", status: "pending" },
+    { id: "S009", ssn: "SSN100828", name: "Amna Matar Khalifa Bindesmal Almazrouei", status: "pending" },
+  ],
+};
+
+// Helper to get students for a course section
+const getStudentsForCourse = (courseId: string): Student[] => {
+  return COURSE_REGISTRATIONS[courseId] || [];
+};
+
+// Default students for backward compatibility
+const MOCK_STUDENTS: Student[] = COURSE_REGISTRATIONS["EDEL9101E-01"];
 
 // Real schedule data for Asma Abdallah - Spring 2026
 interface ScheduleEntry {
@@ -225,12 +265,13 @@ const MOCK_SESSIONS: Session[] = generateTodaySessions();
 // Generate past sessions from real schedule data
 const generatePastSessions = (): PastSession[] => {
   return SCHEDULE_DATA.map((entry) => {
-    const totalStudents = entry.studentEnrolledCount || 6;
+    const courseId = entry.courseSectionCode.replace(/\s+/g, "");
+    const courseStudents = getStudentsForCourse(courseId);
+    const totalStudents = courseStudents.length || entry.studentEnrolledCount || 6;
     const presentCount = entry.hasAttendance ? Math.floor(totalStudents * (0.7 + Math.random() * 0.25)) : 0;
     const excusedCount = entry.hasAttendance ? Math.floor(Math.random() * 2) : 0;
-    const absentCount = totalStudents - presentCount - excusedCount;
     
-    const students: Student[] = Array.from({ length: totalStudents }, (_, sIdx) => {
+    const students: Student[] = courseStudents.map((student, sIdx) => {
       const rand = Math.random();
       let status: Student["status"];
       let isManualOverride = false;
@@ -249,9 +290,7 @@ const generatePastSessions = (): PastSession[] => {
       }
       
       return {
-        id: `S${String(sIdx + 1).padStart(3, "0")}`,
-        ssn: `SSN${10011 + sIdx}`,
-        name: MOCK_STUDENTS[sIdx % MOCK_STUDENTS.length].name,
+        ...student,
         status,
         isManualOverride,
         overrideReason,
@@ -268,10 +307,10 @@ const generatePastSessions = (): PastSession[] => {
       time: `${entry.startTime} - ${entry.endTime}`,
       location: `${entry.roomName} (${entry.roomNo})`,
       type: (isOnline ? "online" : "onsite") as "online" | "onsite",
-      presentCount,
-      excusedCount,
-      absentCount,
-      totalStudents,
+      presentCount: students.filter(s => s.status === "present").length,
+      excusedCount: students.filter(s => s.status === "excused").length,
+      absentCount: students.filter(s => s.status === "absent").length,
+      totalStudents: students.length,
       students,
     };
   }).sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -390,7 +429,8 @@ const FacultyDashboard = () => {
     setShowQR(true);
     setIsActive(true);
     setTimeLeft(30);
-    setStudents(MOCK_STUDENTS.map((s) => ({ ...s, status: "pending" })));
+    const courseStudents = getStudentsForCourse(session.courseId);
+    setStudents(courseStudents.map((s) => ({ ...s, status: "pending" })));
     toast.success(`Attendance started for ${session.courseName}`);
   };
 
