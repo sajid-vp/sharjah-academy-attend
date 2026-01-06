@@ -89,30 +89,7 @@ const MOCK_COURSES = [
   { id: "EDEL9201E-01", name: "EDEL 9201E - Educational Leadership Thesis I", code: "EDEL 9201E", section: "01" },
 ];
 
-// Generate today's sessions from schedule data (January 6, 2026)
-const generateTodaySessions = (): Session[] => {
-  const today = new Date("2026-01-06");
-  const todayStr = today.toDateString();
-  
-  return SCHEDULE_DATA
-    .filter(entry => entry.date.toDateString() === todayStr)
-    .map((entry, idx) => {
-      const isOnline = entry.roomName.toLowerCase().includes("virtual");
-      return {
-        id: `S${idx + 1}`,
-        courseId: entry.courseSectionCode.replace(/\s+/g, ""),
-        courseName: entry.courseName,
-        time: `${entry.startTime} - ${entry.endTime}`,
-        location: `${entry.roomName} (${entry.roomNo})`,
-        type: (isOnline ? "online" : "onsite") as "online" | "onsite",
-        attendanceStatus: "not-started" as "not-started" | "in-progress" | "completed",
-        presentCount: 0,
-        totalStudents: entry.studentEnrolledCount || 6,
-      };
-    });
-};
 
-const MOCK_SESSIONS: Session[] = generateTodaySessions();
 
 const MOCK_STUDENTS: Student[] = [
   { id: "S001", ssn: "SSN10011", name: "Abdulla Ahmed Hasan", status: "pending" },
@@ -216,6 +193,34 @@ const SCHEDULE_DATA: ScheduleEntry[] = [
   { id: 4284, date: new Date("2026-03-18"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201A-01", courseName: "EDEL 9201A - 1 الرسالة", courseCode: "EDEL 9201A", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: true, studentEnrolledCount: 6, usageType: "Classroom - Hybrid" },
   { id: 4285, date: new Date("2026-03-18"), startTime: "10:30", endTime: "12:30", courseSectionCode: "EDEL 9201E-01", courseName: "EDEL 9201E - Educational Leadership Thesis I", courseCode: "EDEL 9201E", roomName: "Classroom 01", roomNo: "CL001", hasAttendance: false, studentEnrolledCount: 0, usageType: "Classroom - Hybrid" },
 ];
+
+// Generate today's sessions from schedule data (January 6, 2026)
+const generateTodaySessions = (): Session[] => {
+  // Filter for January 6, 2026 sessions
+  const todaySessions = SCHEDULE_DATA.filter(entry => {
+    const entryDate = entry.date;
+    return entryDate.getFullYear() === 2026 && 
+           entryDate.getMonth() === 0 && // January is 0
+           entryDate.getDate() === 6;
+  });
+  
+  return todaySessions.map((entry, idx) => {
+    const isOnline = entry.roomName.toLowerCase().includes("virtual");
+    return {
+      id: `S${idx + 1}`,
+      courseId: entry.courseSectionCode.replace(/\s+/g, ""),
+      courseName: entry.courseName,
+      time: `${entry.startTime} - ${entry.endTime}`,
+      location: `${entry.roomName} (${entry.roomNo})`,
+      type: (isOnline ? "online" : "onsite") as "online" | "onsite",
+      attendanceStatus: "not-started" as "not-started" | "in-progress" | "completed",
+      presentCount: 0,
+      totalStudents: entry.studentEnrolledCount || 6,
+    };
+  });
+};
+
+const MOCK_SESSIONS: Session[] = generateTodaySessions();
 
 // Generate past sessions from real schedule data
 const generatePastSessions = (): PastSession[] => {
