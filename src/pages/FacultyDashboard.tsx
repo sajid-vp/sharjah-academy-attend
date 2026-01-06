@@ -1062,7 +1062,7 @@ const FacultyDashboard = () => {
           {/* Student Filter */}
           <div className="py-3">
             <Input
-              placeholder="Search students by name..."
+              placeholder="Search by name or SSN..."
               value={studentSearchFilter}
               onChange={(e) => setStudentSearchFilter(e.target.value)}
               className="max-w-sm"
@@ -1073,7 +1073,8 @@ const FacultyDashboard = () => {
           <div className="flex-1 overflow-y-auto space-y-2 py-4">
             {(pastSessionStudents.length > 0 ? pastSessionStudents : selectedPastSession?.students || [])
               .filter((student) => 
-                student.name.toLowerCase().includes(studentSearchFilter.toLowerCase())
+                student.name.toLowerCase().includes(studentSearchFilter.toLowerCase()) ||
+                student.ssn.toLowerCase().includes(studentSearchFilter.toLowerCase())
               )
               .map((student) => (
               <div
