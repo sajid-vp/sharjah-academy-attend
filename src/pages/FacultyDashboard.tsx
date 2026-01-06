@@ -920,31 +920,37 @@ const FacultyDashboard = () => {
             className="px-6 py-4 border-b bg-muted/30 cursor-move select-none"
             onMouseDown={handleMouseDown}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <GripHorizontal className="h-5 w-5 text-muted-foreground" />
-                <DialogTitle className="text-xl font-bold">{selectedSession?.courseName}</DialogTitle>
-                <DialogDescription className="flex items-center gap-4 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {selectedSession?.time}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {selectedSession?.location}
-                  </span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    selectedSession?.type === "online" 
-                      ? "bg-accent/10 text-accent" 
-                      : "bg-primary/10 text-primary"
-                  }`}>
-                    {selectedSession?.type === "online" ? "Online" : "On-site"}
-                  </span>
-                </DialogDescription>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <GripHorizontal className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <DialogTitle className="text-lg font-bold truncate">
+                    {selectedSession?.courseId}
+                  </DialogTitle>
+                  <DialogDescription className="flex flex-col gap-1 text-sm">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+                      {selectedSession?.time}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                      {selectedSession?.location}
+                    </span>
+                  </DialogDescription>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full mr-6">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-                Session Active
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                  selectedSession?.type === "online" 
+                    ? "bg-accent/10 text-accent" 
+                    : "bg-primary/10 text-primary"
+                }`}>
+                  {selectedSession?.type === "online" ? "Online" : "On-site"}
+                </span>
+                <div className="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                  Session Active
+                </div>
               </div>
             </div>
           </DialogHeader>
