@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, QrCode, Users, CheckCircle, XCircle, Clock, Calendar, BookOpen, MapPin, X, GripHorizontal, Maximize2, Minimize2, History, AlertCircle, Download, Filter, MoreHorizontal, CalendarIcon } from "lucide-react";
 import { format, subDays, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
@@ -569,14 +570,14 @@ const FacultyDashboard = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{FACULTY_INFO.name}</h1>
-                <p className="text-sm text-muted-foreground">Sharjah Education Academy</p>
-              </div>
+              <h1 className="text-2xl font-bold text-foreground">Attendance</h1>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-primary">{format(today, "EEEE, MMMM d, yyyy")}</span>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {FACULTY_INFO.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
         </div>
@@ -637,10 +638,16 @@ const FacultyDashboard = () => {
 
             {/* Today's Sessions List */}
             <Card className="mb-8 border-none p-6 shadow-medium">
-              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-card-foreground">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Today's Sessions
-              </h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-xl font-semibold text-card-foreground">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  Today's Sessions
+                </h2>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>{format(today, "EEEE, MMMM d, yyyy")}</span>
+                </div>
+              </div>
               <div className="space-y-3">
                 {sessions.map((session) => (
                   <div
