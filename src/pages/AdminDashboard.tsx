@@ -210,56 +210,46 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card className="border-none p-4 shadow-sm">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <Select value={reportType} onValueChange={(v) => { setReportType(v); setSelectedKey(null); }}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="student">Student Wise</SelectItem>
-                <SelectItem value="faculty">Faculty Wise</SelectItem>
-                <SelectItem value="course-section">Course Section Wise</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={ay} onValueChange={setAy}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Select value={semester} onValueChange={setSemester}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SEMESTER_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
-            </div>
-            <Button onClick={handleExport} className="gap-2">
-              <Download className="h-4 w-4" /> Export
-            </Button>
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={reportType} onValueChange={(v) => { setReportType(v); setSelectedKey(null); }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Student Wise</SelectItem>
+              <SelectItem value="faculty">Faculty Wise</SelectItem>
+              <SelectItem value="course-section">Course Section Wise</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={ay} onValueChange={setAy}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={semester} onValueChange={setSemester}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SEMESTER_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="relative flex-1 min-w-[160px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
           </div>
-        </Card>
+          <Button onClick={handleExport} size="sm" className="gap-2">
+            <Download className="h-4 w-4" /> Export
+          </Button>
+        </div>
 
         {/* Aggregated Cards or Detail Table */}
         {!selectedKey ? (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 px-1">
-              {viewIcon}
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                {reportType === "student" ? "Students" : reportType === "faculty" ? "Faculty" : "Course Sections"}
-              </h2>
-              <span className="text-xs text-muted-foreground">({aggregated.length})</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {aggregated.map((row) => (
                 <Card
                   key={row.key}
@@ -291,7 +281,6 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
-          </div>
         ) : (
           <Card className="border-none shadow-sm overflow-hidden">
             <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
