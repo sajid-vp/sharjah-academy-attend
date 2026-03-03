@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Shield, Download, Search, Users, BookOpen, GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -68,7 +69,6 @@ interface AggregatedRow {
 
 const aggregate = (data: ReportRow[], groupBy: string): AggregatedRow[] => {
   const groups: Record<string, AggregatedRow> = {};
-
   data.forEach((r) => {
     let key: string, label: string, sublabel: string;
     if (groupBy === "student") {
@@ -84,7 +84,6 @@ const aggregate = (data: ReportRow[], groupBy: string): AggregatedRow[] => {
       label = r.courseSection;
       sublabel = r.instructor;
     }
-
     if (!groups[key]) {
       groups[key] = { key, label, sublabel, totalSessions: 0, marked: 0, notMarked: 0, totalPresent: 0, totalAbsent: 0, rate: 0, count: 0 };
     }
@@ -96,7 +95,6 @@ const aggregate = (data: ReportRow[], groupBy: string): AggregatedRow[] => {
     g.totalAbsent += r.totalAbsent;
     g.count++;
   });
-
   return Object.values(groups).map((g) => ({
     ...g,
     rate: g.totalSessions > 0 ? Math.round((g.totalPresent / g.totalSessions) * 100) : 0,
@@ -104,7 +102,7 @@ const aggregate = (data: ReportRow[], groupBy: string): AggregatedRow[] => {
 };
 
 const AdminDashboard = () => {
-  const [reportType, setReportType] = useState<string>("student");
+  const [activeTab, setActiveTab] = useState("student");
   const [ay, setAy] = useState("2025-2026");
   const [semester, setSemester] = useState("Fall");
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,18 +121,17 @@ const AdminDashboard = () => {
     );
   }, [searchQuery]);
 
-  const aggregated = useMemo(() => aggregate(filteredRaw, reportType), [filteredRaw, reportType]);
+  const aggregated = useMemo(() => aggregate(filteredRaw, activeTab), [filteredRaw, activeTab]);
 
   const detailRows = useMemo(() => {
     if (!selectedKey) return [];
     return filteredRaw.filter((r) => {
-      if (reportType === "student") return r.ssn === selectedKey;
-      if (reportType === "faculty") return r.instructor === selectedKey;
+      if (activeTab === "student") return r.ssn === selectedKey;
+      if (activeTab === "faculty") return r.instructor === selectedKey;
       return r.courseSection === selectedKey;
     });
-  }, [selectedKey, filteredRaw, reportType]);
+  }, [selectedKey, filteredRaw, activeTab]);
 
-  // Stats
   const totalStudents = new Set(MOCK_DATA.map((r) => r.ssn)).size;
   const totalFaculty = new Set(MOCK_DATA.map((r) => r.instructor)).size;
   const totalSections = new Set(MOCK_DATA.map((r) => r.courseSection)).size;
@@ -153,7 +150,7 @@ const AdminDashboard = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `attendance_${reportType}_${ay}_${semester}.csv`;
+    a.download = `attendance_${activeTab}_${ay}_${semester}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Report exported as CSV");
@@ -165,7 +162,112 @@ const AdminDashboard = () => {
     return "text-destructive";
   };
 
-  const viewIcon = reportType === "student" ? <GraduationCap className="h-4 w-4" /> : reportType === "faculty" ? <Users className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />;
+  const renderDetailTable = () => (
+    <Card className="border-none shadow-sm overflow-hidden">
+      <div className="p-4 border-b flex items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={() => setSelectedKey(null)} className="gap-1.5">
+          <ArrowLeft className="h-4 w-4" /> Back
+        </Button>
+        <div>
+          <h2 className="text-base font-semibold text-card-foreground">
+            {aggregated.find((a) => a.key === selectedKey)?.label}
+          </h2>
+          <p className="text-xs text-muted-foreground">{detailRows.length} records</p>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="text-xs font-semibold whitespace-nowrap">SSN</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap">Student</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap">Course Code</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap">Course Section</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap">Instructor</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Total Sessions</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Marked</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Not Marked</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Present</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Absent</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {detailRows.map((row, i) => (
+              <TableRow key={`${row.ssn}-${row.courseSection}-${i}`} className="hover:bg-muted/30">
+                <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.ssn}</TableCell>
+                <TableCell className="text-sm font-medium whitespace-nowrap">{row.student}</TableCell>
+                <TableCell className="text-sm whitespace-nowrap">{row.courseCode}</TableCell>
+                <TableCell className="text-sm whitespace-nowrap">{row.courseSection}</TableCell>
+                <TableCell className="text-sm whitespace-nowrap text-muted-foreground">{row.instructor}</TableCell>
+                <TableCell className="text-sm text-center font-medium">{row.totalSessions}</TableCell>
+                <TableCell className="text-sm text-center">{row.marked}</TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className={row.notMarked > 0 ? "text-destructive font-medium" : ""}>{row.notMarked}</span>
+                </TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className="text-success font-medium">{row.totalPresent}</span>
+                </TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className={row.totalAbsent > 0 ? "text-destructive font-medium" : ""}>{row.totalAbsent}</span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
+  );
+
+  const renderAggregatedList = () => (
+    <Card className="border-none shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="text-xs font-semibold whitespace-nowrap">
+                {activeTab === "student" ? "Student" : activeTab === "faculty" ? "Faculty" : "Course Section"}
+              </TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap">
+                {activeTab === "student" ? "SSN" : activeTab === "faculty" ? "Courses" : "Instructor"}
+              </TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Sessions</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Marked</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Not Marked</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Present</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Absent</TableHead>
+              <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Rate</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {aggregated.map((row) => (
+              <TableRow
+                key={row.key}
+                className="hover:bg-muted/30 cursor-pointer"
+                onClick={() => setSelectedKey(row.key)}
+              >
+                <TableCell className="text-sm font-medium whitespace-nowrap">{row.label}</TableCell>
+                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{row.sublabel}</TableCell>
+                <TableCell className="text-sm text-center">{row.totalSessions}</TableCell>
+                <TableCell className="text-sm text-center">{row.marked}</TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className={row.notMarked > 0 ? "text-destructive font-medium" : ""}>{row.notMarked}</span>
+                </TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className="text-success font-medium">{row.totalPresent}</span>
+                </TableCell>
+                <TableCell className="text-sm text-center">
+                  <span className={row.totalAbsent > 0 ? "text-destructive font-medium" : ""}>{row.totalAbsent}</span>
+                </TableCell>
+                <TableCell className="text-center">
+                  <span className={`text-sm font-bold ${getRateColor(row.rate)}`}>{row.rate}%</span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,6 +292,31 @@ const AdminDashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-5 sm:py-6 space-y-5">
+        {/* Global Filters: AY & Semester */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={ay} onValueChange={setAy}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={semester} onValueChange={setSemester}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SEMESTER_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="ml-auto">
+            <Button onClick={handleExport} size="sm" className="gap-2">
+              <Download className="h-4 w-4" /> Export
+            </Button>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="border-none p-4 shadow-sm text-center">
@@ -210,134 +337,36 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-3">
-          <Select value={reportType} onValueChange={(v) => { setReportType(v); setSelectedKey(null); }}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="student">Student Wise</SelectItem>
-              <SelectItem value="faculty">Faculty Wise</SelectItem>
-              <SelectItem value="course-section">Course Section Wise</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={ay} onValueChange={setAy}>
-            <SelectTrigger className="w-[130px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {AY_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={semester} onValueChange={setSemester}>
-            <SelectTrigger className="w-[110px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SEMESTER_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <div className="relative flex-1 min-w-[160px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
+        {/* Tabs for Views */}
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedKey(null); setSearchQuery(""); }}>
+          <div className="flex flex-wrap items-center gap-3">
+            <TabsList>
+              <TabsTrigger value="student" className="gap-1.5">
+                <GraduationCap className="h-4 w-4" /> Students
+              </TabsTrigger>
+              <TabsTrigger value="faculty" className="gap-1.5">
+                <Users className="h-4 w-4" /> Faculty
+              </TabsTrigger>
+              <TabsTrigger value="course-section" className="gap-1.5">
+                <BookOpen className="h-4 w-4" /> Sections
+              </TabsTrigger>
+            </TabsList>
+            <div className="relative flex-1 min-w-[160px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
+            </div>
           </div>
-          <Button onClick={handleExport} size="sm" className="gap-2">
-            <Download className="h-4 w-4" /> Export
-          </Button>
-        </div>
 
-        {/* Aggregated Cards or Detail Table */}
-        {!selectedKey ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {aggregated.map((row) => (
-                <Card
-                  key={row.key}
-                  className="border shadow-sm p-4 sm:p-5 cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary/20 transition-all"
-                  onClick={() => setSelectedKey(row.key)}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-card-foreground truncate">{row.label}</p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{row.sublabel}</p>
-                    </div>
-                    <span className={`text-xl font-bold ${getRateColor(row.rate)} shrink-0 ml-3`}>{row.rate}%</span>
-                  </div>
-                  <Progress value={row.rate} className="h-2 mb-3" />
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-muted/50 p-2">
-                      <p className="text-xs text-muted-foreground">Sessions</p>
-                      <p className="text-sm font-bold text-foreground">{row.totalSessions}</p>
-                    </div>
-                    <div className="rounded-lg bg-success/10 p-2">
-                      <p className="text-xs text-muted-foreground">Present</p>
-                      <p className="text-sm font-bold text-success">{row.totalPresent}</p>
-                    </div>
-                    <div className="rounded-lg bg-destructive/10 p-2">
-                      <p className="text-xs text-muted-foreground">Absent</p>
-                      <p className="text-sm font-bold text-destructive">{row.totalAbsent}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-        ) : (
-          <Card className="border-none shadow-sm overflow-hidden">
-            <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => setSelectedKey(null)} className="gap-1.5">
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-                <div>
-                  <h2 className="text-base font-semibold text-card-foreground">
-                    {aggregated.find((a) => a.key === selectedKey)?.label}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">{detailRows.length} records</p>
-                </div>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">SSN</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Student</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Course Code</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Course Section</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Instructor</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Total Sessions</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Marked</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Not Marked</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Present</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap text-center">Absent</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailRows.map((row, i) => (
-                    <TableRow key={`${row.ssn}-${row.courseSection}-${i}`} className="hover:bg-muted/30">
-                      <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">{row.ssn}</TableCell>
-                      <TableCell className="text-sm font-medium whitespace-nowrap">{row.student}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">{row.courseCode}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">{row.courseSection}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap text-muted-foreground">{row.instructor}</TableCell>
-                      <TableCell className="text-sm text-center font-medium">{row.totalSessions}</TableCell>
-                      <TableCell className="text-sm text-center">{row.marked}</TableCell>
-                      <TableCell className="text-sm text-center">
-                        <span className={row.notMarked > 0 ? "text-destructive font-medium" : ""}>{row.notMarked}</span>
-                      </TableCell>
-                      <TableCell className="text-sm text-center">
-                        <span className="text-success font-medium">{row.totalPresent}</span>
-                      </TableCell>
-                      <TableCell className="text-sm text-center">
-                        <span className={row.totalAbsent > 0 ? "text-destructive font-medium" : ""}>{row.totalAbsent}</span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        )}
+          <TabsContent value="student">
+            {selectedKey ? renderDetailTable() : renderAggregatedList()}
+          </TabsContent>
+          <TabsContent value="faculty">
+            {selectedKey ? renderDetailTable() : renderAggregatedList()}
+          </TabsContent>
+          <TabsContent value="course-section">
+            {selectedKey ? renderDetailTable() : renderAggregatedList()}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
