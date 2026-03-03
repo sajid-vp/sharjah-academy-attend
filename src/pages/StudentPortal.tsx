@@ -122,6 +122,25 @@ const StudentPortal = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Mark Attendance - Top */}
+        <Card className="mb-8 border-none p-6 shadow-medium">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <QrCode className="h-6 w-6 text-primary" />
+                <h2 className="text-xl font-semibold text-card-foreground">Mark Attendance</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Scan the QR code displayed by your instructor
+              </p>
+            </div>
+            <Button className="bg-gradient-primary shadow-medium shrink-0">
+              <QrCode className="h-4 w-4 mr-2" />
+              Scan QR Code
+            </Button>
+          </div>
+        </Card>
+
         {/* Overall Stats Cards */}
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card className="border-none p-4 shadow-medium">
@@ -146,141 +165,109 @@ const StudentPortal = () => {
           </Card>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Registered Courses */}
-          <div className="lg:col-span-2">
-            <Card className="border-none p-6 shadow-medium">
-              <div className="mb-4 flex items-center gap-2">
-                <BookOpen className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold text-card-foreground">Registered Courses</h2>
-              </div>
+        {/* Registered Courses */}
+        <Card className="border-none p-6 shadow-medium">
+          <div className="mb-4 flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <h2 className="text-xl font-semibold text-card-foreground">Registered Courses</h2>
+          </div>
 
-              <div className="space-y-3">
-                {MOCK_COURSE_ATTENDANCE.map((course) => {
-                  const completed = course.present + course.absent;
-                  const rate = completed > 0 ? (course.present / completed) * 100 : 0;
-                  const isExpanded = expandedCourse === course.courseId;
+          <div className="space-y-3">
+            {MOCK_COURSE_ATTENDANCE.map((course) => {
+              const completed = course.present + course.absent;
+              const rate = completed > 0 ? (course.present / completed) * 100 : 0;
+              const isExpanded = expandedCourse === course.courseId;
 
-                  return (
-                    <div key={course.courseId} className="rounded-lg border bg-card overflow-hidden">
-                      <button
-                        onClick={() => setExpandedCourse(isExpanded ? null : course.courseId)}
-                        className="w-full p-4 text-left transition-colors hover:bg-muted/30"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="secondary" className="text-xs shrink-0">
-                                {course.courseCode}
-                              </Badge>
+              return (
+                <div key={course.courseId} className="rounded-lg border bg-card overflow-hidden">
+                  <button
+                    onClick={() => setExpandedCourse(isExpanded ? null : course.courseId)}
+                    className="w-full p-4 text-left transition-colors hover:bg-muted/30"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            {course.courseCode}
+                          </Badge>
+                        </div>
+                        <p className="text-sm font-medium text-card-foreground line-clamp-2">
+                          {course.courseName}
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {course.totalSessions} sessions
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <CheckCircle className="h-3.5 w-3.5 text-success" />
+                            {course.present} present
+                          </span>
+                          {course.absent > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5 text-destructive" />
+                              {course.absent} absent
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center gap-3">
+                          <Progress value={rate} className="h-2 flex-1" />
+                          <span className={`text-sm font-bold ${getAttendanceColor(rate)}`}>
+                            {rate.toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-1">
+                        {isExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t px-4 pb-4 pt-3">
+                      <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Session History
+                      </p>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {course.sessions.map((session, idx) => (
+                          <div
+                            key={idx}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 rounded-lg border bg-card px-3 py-2"
+                          >
+                            <div className="flex items-center gap-2 text-sm min-w-0">
+                              <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                              <span className="text-card-foreground whitespace-nowrap">{session.date}</span>
+                              <span className="text-muted-foreground text-xs whitespace-nowrap">{session.time}</span>
                             </div>
-                            <p className="text-sm font-medium text-card-foreground line-clamp-2">
-                              {course.courseName}
-                            </p>
-                            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3.5 w-3.5" />
-                                {course.totalSessions} sessions
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                {course.present} present
-                              </span>
-                              {course.absent > 0 && (
-                                <span className="flex items-center gap-1">
+                            <div className="shrink-0 self-end sm:self-auto">
+                              {session.status === "present" ? (
+                                <div className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5">
+                                  <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                  <span className="text-xs font-medium text-success">Present</span>
+                                </div>
+                              ) : session.status === "absent" ? (
+                                <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5">
                                   <Clock className="h-3.5 w-3.5 text-destructive" />
-                                  {course.absent} absent
-                                </span>
+                                  <span className="text-xs font-medium text-destructive">Absent</span>
+                                </div>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">Upcoming</Badge>
                               )}
                             </div>
-                            <div className="mt-3 flex items-center gap-3">
-                              <Progress value={rate} className="h-2 flex-1" />
-                              <span className={`text-sm font-bold ${getAttendanceColor(rate)}`}>
-                                {rate.toFixed(0)}%
-                              </span>
-                            </div>
                           </div>
-                          <div className="pt-1">
-                            {isExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </div>
-                        </div>
-                      </button>
-
-                      {isExpanded && (
-                        <div className="border-t px-4 pb-4 pt-3">
-                          <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Session History
-                          </p>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {course.sessions.map((session, idx) => (
-                              <div
-                                key={idx}
-                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 rounded-lg border bg-card px-3 py-2"
-                              >
-                                <div className="flex items-center gap-2 text-sm min-w-0">
-                                  <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                  <span className="text-card-foreground whitespace-nowrap">{session.date}</span>
-                                  <span className="text-muted-foreground text-xs whitespace-nowrap">{session.time}</span>
-                                </div>
-                                <div className="shrink-0 self-end sm:self-auto">
-                                  {session.status === "present" ? (
-                                    <div className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5">
-                                      <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                      <span className="text-xs font-medium text-success">Present</span>
-                                    </div>
-                                  ) : session.status === "absent" ? (
-                                    <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5">
-                                      <Clock className="h-3.5 w-3.5 text-destructive" />
-                                      <span className="text-xs font-medium text-destructive">Absent</span>
-                                    </div>
-                                  ) : (
-                                    <Badge variant="secondary" className="text-xs">Upcoming</Badge>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
+                  )}
+                </div>
+              );
+            })}
           </div>
-
-          {/* Right Column - QR Scan */}
-          <div>
-            <Card className="sticky top-8 border-none p-6 shadow-medium">
-              <div className="flex items-center gap-2 mb-2">
-                <QrCode className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold text-card-foreground">Mark Attendance</h2>
-              </div>
-              <p className="mb-6 text-sm text-muted-foreground">
-                Scan the QR code displayed by your instructor
-              </p>
-              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-6 text-center">
-                <QrCode className="mx-auto mb-4 h-12 w-12 text-primary" />
-                <p className="mb-4 text-sm text-muted-foreground">
-                  Camera access for QR scanning will be available in mobile app
-                </p>
-                <Button className="bg-gradient-primary shadow-medium">Scan QR Code</Button>
-              </div>
-
-              <div className="mt-6 rounded-lg bg-primary/5 p-4">
-                <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Tip:</strong> Make sure to scan the QR code
-                  within 30 seconds when your instructor displays it.
-                </p>
-              </div>
-            </Card>
-          </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
