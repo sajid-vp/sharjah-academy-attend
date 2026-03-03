@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, QrCode, CheckCircle, Clock, Calendar, BarChart3 } from "lucide-react";
+import { ArrowLeft, QrCode, CheckCircle, Clock, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AttendanceRecord {
   id: string;
+  courseCode: string;
   courseName: string;
   date: string;
   time: string;
@@ -15,9 +18,13 @@ interface AttendanceRecord {
 }
 
 const MOCK_HISTORY: AttendanceRecord[] = [
-  { id: "1", courseName: "Introduction to Programming", date: "2025-10-26", time: "10:00 AM", status: "present" },
-  { id: "2", courseName: "Data Structures", date: "2025-10-25", time: "2:00 PM", status: "present" },
-  { id: "3", courseName: "Web Development", date: "2025-10-24", time: "11:00 AM", status: "present" },
+  { id: "1", courseCode: "EDEL 9101E", courseName: "Introduction to Programming", date: "2025-10-26", time: "10:00 AM", status: "present" },
+  { id: "2", courseCode: "EDEL 9101E", courseName: "Introduction to Programming", date: "2025-10-19", time: "10:00 AM", status: "present" },
+  { id: "3", courseCode: "EDEL 9101E", courseName: "Introduction to Programming", date: "2025-10-12", time: "10:00 AM", status: "absent" },
+  { id: "4", courseCode: "EDEL 9201A", courseName: "Data Structures", date: "2025-10-25", time: "2:00 PM", status: "present" },
+  { id: "5", courseCode: "EDEL 9201A", courseName: "Data Structures", date: "2025-10-18", time: "2:00 PM", status: "present" },
+  { id: "6", courseCode: "CS 3010", courseName: "Web Development", date: "2025-10-24", time: "11:00 AM", status: "present" },
+  { id: "7", courseCode: "CS 3010", courseName: "Web Development", date: "2025-10-17", time: "11:00 AM", status: "absent" },
 ];
 
 const StudentPortal = () => {
@@ -35,6 +42,7 @@ const StudentPortal = () => {
       if (new Date() > expiresAt) { toast.error("QR code has expired"); return; }
       const newRecord: AttendanceRecord = {
         id: Date.now().toString(),
+        courseCode: qrData.courseCode || "MISC",
         courseName: `Course ${qrData.courseId}`,
         date: new Date().toISOString().split("T")[0],
         time: new Date().toLocaleTimeString(),
@@ -50,6 +58,19 @@ const StudentPortal = () => {
   const absentCount = history.filter((r) => r.status === "absent").length;
   const totalClasses = history.length;
   const attendanceRate = totalClasses > 0 ? (presentCount / totalClasses) * 100 : 0;
+
+  const courseGroups = useMemo(() => {
+    const groups: Record<string, { courseCode: string; courseName: string; records: AttendanceRecord[] }> = {};
+    history.forEach((r) => {
+      if (!groups[r.courseCode]) {
+        groups[r.courseCode] = { courseCode: r.courseCode, courseName: r.courseName, records: [] };
+      }
+      groups[r.courseCode].records.push(r);
+    });
+    return Object.values(groups);
+  }, [history]);
+
+  const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,29 +150,64 @@ const StudentPortal = () => {
                 <Calendar className="h-6 w-6 text-primary" />
                 <h2 className="text-xl font-semibold text-card-foreground">Attendance History</h2>
               </div>
-              <div className="space-y-2">
-                {history.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between rounded-lg border bg-card p-4 transition-all hover:shadow-soft">
-                    <div className="flex-1">
-                      <div className="mb-1 font-medium text-card-foreground">{record.courseName}</div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{record.date}</span>
-                        <span>{record.time}</span>
-                      </div>
-                    </div>
-                    {record.status === "present" ? (
-                      <div className="flex items-center gap-2 rounded-full bg-success/10 px-3 py-1">
-                        <CheckCircle className="h-4 w-4 text-success" />
-                        <span className="text-sm font-medium text-success">Present</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1">
-                        <Clock className="h-4 w-4 text-destructive" />
-                        <span className="text-sm font-medium text-destructive">Absent</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="divide-y">
+                {courseGroups.map((group) => {
+                  const attended = group.records.filter((r) => r.status === "present").length;
+                  const missed = group.records.filter((r) => r.status === "absent").length;
+                  const total = group.records.length;
+                  const rate = total > 0 ? (attended / total) * 100 : 0;
+                  const isOpen = expandedCourse === group.courseCode;
+
+                  return (
+                    <Collapsible
+                      key={group.courseCode}
+                      open={isOpen}
+                      onOpenChange={() => setExpandedCourse(isOpen ? null : group.courseCode)}
+                    >
+                      <CollapsibleTrigger className="w-full py-4 flex items-center justify-between hover:bg-muted/50 rounded-lg px-3 transition-colors">
+                        <div className="flex-1 text-left">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-mono text-muted-foreground">{group.courseCode}</span>
+                            <span className="font-medium text-card-foreground">{group.courseName}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="text-success">{attended} attended</span>
+                            <span className="text-destructive">{missed} missed</span>
+                            <span>{total} total</span>
+                          </div>
+                          <Progress value={rate} className="mt-2 h-1.5" />
+                        </div>
+                        <div className="ml-4 flex items-center gap-3">
+                          <span className="text-sm font-bold text-primary">{rate.toFixed(0)}%</span>
+                          {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="space-y-1 pb-3 pl-3 pr-3">
+                          {group.records.map((record) => (
+                            <div key={record.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
+                              <div className="flex items-center gap-4 text-muted-foreground">
+                                <span>{record.date}</span>
+                                <span>{record.time}</span>
+                              </div>
+                              {record.status === "present" ? (
+                                <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5">
+                                  <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                  <span className="text-xs font-medium text-success">Present</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-0.5">
+                                  <Clock className="h-3.5 w-3.5 text-destructive" />
+                                  <span className="text-xs font-medium text-destructive">Absent</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                })}
               </div>
             </Card>
           </TabsContent>
