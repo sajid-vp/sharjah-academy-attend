@@ -172,90 +172,69 @@ const StudentPortal = () => {
             <h2 className="text-xl font-semibold text-card-foreground">Registered Courses</h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="divide-y">
             {MOCK_COURSE_ATTENDANCE.map((course) => {
               const completed = course.present + course.absent;
               const rate = completed > 0 ? (course.present / completed) * 100 : 0;
               const isExpanded = expandedCourse === course.courseId;
 
               return (
-                <div key={course.courseId} className="rounded-lg border bg-card overflow-hidden">
+                <div key={course.courseId} className="overflow-hidden">
                   <button
                     onClick={() => setExpandedCourse(isExpanded ? null : course.courseId)}
-                    className="w-full p-4 text-left transition-colors hover:bg-muted/30"
+                    className="w-full px-1 py-3 text-left transition-colors hover:bg-muted/30"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="secondary" className="text-xs shrink-0">
-                            {course.courseCode}
-                          </Badge>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-primary shrink-0">{course.courseCode}</span>
+                            <span className="text-sm text-card-foreground truncate">{course.courseName}</span>
+                          </div>
+                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{course.present}/{completed} attended</span>
+                            {course.absent > 0 && (
+                              <span className="text-destructive">{course.absent} missed</span>
+                            )}
+                            <span>{course.upcoming} upcoming</span>
+                          </div>
                         </div>
-                        <p className="text-sm font-medium text-card-foreground line-clamp-2">
-                          {course.courseName}
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {course.totalSessions} sessions
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="h-3.5 w-3.5 text-success" />
-                            {course.present} present
-                          </span>
-                          {course.absent > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5 text-destructive" />
-                              {course.absent} absent
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-3 flex items-center gap-3">
-                          <Progress value={rate} className="h-2 flex-1" />
-                          <span className={`text-sm font-bold ${getAttendanceColor(rate)}`}>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2 w-28">
+                          <Progress value={rate} className="h-1.5 flex-1" />
+                          <span className={`text-xs font-bold ${getAttendanceColor(rate)}`}>
                             {rate.toFixed(0)}%
                           </span>
                         </div>
-                      </div>
-                      <div className="pt-1">
                         {isExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         )}
                       </div>
                     </div>
                   </button>
 
                   {isExpanded && (
-                    <div className="border-t px-4 pb-4 pt-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Session History
-                      </p>
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                    <div className="pb-3 pl-1">
+                      <div className="space-y-1 max-h-56 overflow-y-auto">
                         {course.sessions.map((session, idx) => (
                           <div
                             key={idx}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 rounded-lg border bg-card px-3 py-2"
+                            className="flex items-center justify-between rounded px-2 py-1.5 text-xs hover:bg-muted/30"
                           >
-                            <div className="flex items-center gap-2 text-sm min-w-0">
-                              <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                              <span className="text-card-foreground whitespace-nowrap">{session.date}</span>
-                              <span className="text-muted-foreground text-xs whitespace-nowrap">{session.time}</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-card-foreground">{session.date}</span>
+                              <span className="text-muted-foreground">{session.time}</span>
                             </div>
-                            <div className="shrink-0 self-end sm:self-auto">
+                            <div className="shrink-0">
                               {session.status === "present" ? (
-                                <div className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5">
-                                  <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                  <span className="text-xs font-medium text-success">Present</span>
-                                </div>
+                                <span className="text-success font-medium">Present</span>
                               ) : session.status === "absent" ? (
-                                <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5">
-                                  <Clock className="h-3.5 w-3.5 text-destructive" />
-                                  <span className="text-xs font-medium text-destructive">Absent</span>
-                                </div>
+                                <span className="text-destructive font-medium">Absent</span>
                               ) : (
-                                <Badge variant="secondary" className="text-xs">Upcoming</Badge>
+                                <span className="text-muted-foreground">Upcoming</span>
                               )}
                             </div>
                           </div>
