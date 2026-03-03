@@ -132,10 +132,10 @@ const StudentPortal = () => {
                 <h2 className="text-xl font-semibold text-card-foreground">Mark Attendance</h2>
               </div>
               <p className="mb-6 text-sm text-muted-foreground">
-                Scan the QR code displayed by your instructor to mark your attendance
+                Scan the QR code displayed by your instructor
               </p>
-              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-8 text-center">
-                <QrCode className="mx-auto mb-4 h-16 w-16 text-primary" />
+              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
+                <QrCode className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary" />
                 <p className="mb-4 text-sm text-muted-foreground">
                   Camera access for QR scanning will be available in mobile app
                 </p>
@@ -169,7 +169,7 @@ const StudentPortal = () => {
                                 {course.courseCode}
                               </Badge>
                             </div>
-                            <p className="text-sm font-medium text-card-foreground truncate">
+                            <p className="text-sm font-medium text-card-foreground line-clamp-2">
                               {course.courseName}
                             </p>
                             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
@@ -214,26 +214,28 @@ const StudentPortal = () => {
                             {course.sessions.map((session, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"
+                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2 rounded-lg border bg-card px-3 py-2"
                               >
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span className="text-card-foreground">{session.date}</span>
-                                  <span className="text-muted-foreground text-xs">{session.time}</span>
+                                <div className="flex items-center gap-2 text-sm min-w-0">
+                                  <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                  <span className="text-card-foreground whitespace-nowrap">{session.date}</span>
+                                  <span className="text-muted-foreground text-xs whitespace-nowrap">{session.time}</span>
                                 </div>
-                                {session.status === "present" ? (
-                                  <div className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5">
-                                    <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                    <span className="text-xs font-medium text-success">Present</span>
-                                  </div>
-                                ) : session.status === "absent" ? (
-                                  <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5">
-                                    <Clock className="h-3.5 w-3.5 text-destructive" />
-                                    <span className="text-xs font-medium text-destructive">Absent</span>
-                                  </div>
-                                ) : (
-                                  <Badge variant="secondary" className="text-xs">Upcoming</Badge>
-                                )}
+                                <div className="shrink-0 self-end sm:self-auto">
+                                  {session.status === "present" ? (
+                                    <div className="flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5">
+                                      <CheckCircle className="h-3.5 w-3.5 text-success" />
+                                      <span className="text-xs font-medium text-success">Present</span>
+                                    </div>
+                                  ) : session.status === "absent" ? (
+                                    <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-0.5">
+                                      <Clock className="h-3.5 w-3.5 text-destructive" />
+                                      <span className="text-xs font-medium text-destructive">Absent</span>
+                                    </div>
+                                  ) : (
+                                    <Badge variant="secondary" className="text-xs">Upcoming</Badge>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
