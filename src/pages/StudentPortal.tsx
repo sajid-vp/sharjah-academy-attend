@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, QrCode, CheckCircle, Clock, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, QrCode, CheckCircle, Clock, Calendar, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -112,8 +112,8 @@ const StudentPortal = () => {
             <TabsTrigger value="scan" className="flex-1 gap-2">
               <QrCode className="h-4 w-4" /> Scan
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex-1 gap-2">
-              <Calendar className="h-4 w-4" /> History
+            <TabsTrigger value="attendance" className="flex-1 gap-2">
+              <BarChart3 className="h-4 w-4" /> Attendance
             </TabsTrigger>
           </TabsList>
 
@@ -141,10 +141,39 @@ const StudentPortal = () => {
                   within 30 seconds when your instructor displays it.
                 </p>
               </div>
+
+              {/* Last 5 attendance */}
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">Recent Attendance</h3>
+                <div className="space-y-1.5">
+                  {history.slice(0, 5).map((record) => (
+                    <div key={record.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
+                      <div className="flex-1">
+                        <span className="font-medium text-card-foreground">{record.courseName}</span>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                          <span>{record.date}</span>
+                          <span>{record.time}</span>
+                        </div>
+                      </div>
+                      {record.status === "present" ? (
+                        <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5">
+                          <CheckCircle className="h-3.5 w-3.5 text-success" />
+                          <span className="text-xs font-medium text-success">Present</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-0.5">
+                          <Clock className="h-3.5 w-3.5 text-destructive" />
+                          <span className="text-xs font-medium text-destructive">Absent</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
-          <TabsContent value="history">
+          <TabsContent value="attendance">
             <Card className="border-none p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-2">
                 <Calendar className="h-6 w-6 text-primary" />
