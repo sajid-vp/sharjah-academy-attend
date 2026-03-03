@@ -122,28 +122,34 @@ const StudentPortal = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2">
-            {/* QR Scan Card */}
-            <Card className="mb-8 border-none p-6 shadow-medium">
-              <div className="flex items-center gap-2 mb-2">
-                <QrCode className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-semibold text-card-foreground">Mark Attendance</h2>
-              </div>
-              <p className="mb-6 text-sm text-muted-foreground">
-                Scan the QR code displayed by your instructor
-              </p>
-              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-6 sm:p-8 text-center">
-                <QrCode className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary" />
-                <p className="mb-4 text-sm text-muted-foreground">
-                  Camera access for QR scanning will be available in mobile app
-                </p>
-                <Button className="bg-gradient-primary shadow-medium">Scan QR Code</Button>
-              </div>
-            </Card>
+        {/* Overall Stats Cards */}
+        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Card className="border-none p-4 shadow-medium">
+            <p className="text-xs text-muted-foreground">Overall Attendance</p>
+            <p className={`mt-1 text-2xl font-bold ${getAttendanceColor(overallRate)}`}>
+              {overallRate.toFixed(0)}%
+            </p>
+          </Card>
+          <Card className="border-none p-4 shadow-medium">
+            <p className="text-xs text-muted-foreground">Sessions Attended</p>
+            <p className="mt-1 text-2xl font-bold text-success">{totalPresent}</p>
+          </Card>
+          <Card className="border-none p-4 shadow-medium">
+            <p className="text-xs text-muted-foreground">Sessions Missed</p>
+            <p className="mt-1 text-2xl font-bold text-destructive">{totalAbsent}</p>
+          </Card>
+          <Card className="border-none p-4 shadow-medium">
+            <p className="text-xs text-muted-foreground">Total Sessions</p>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {MOCK_COURSE_ATTENDANCE.reduce((s, c) => s + c.totalSessions, 0)}
+            </p>
+          </Card>
+        </div>
 
-            {/* Course-wise Attendance */}
+        {/* Two Column Layout */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Left Column - Registered Courses */}
+          <div className="lg:col-span-2">
             <Card className="border-none p-6 shadow-medium">
               <div className="mb-4 flex items-center gap-2">
                 <BookOpen className="h-6 w-6 text-primary" />
@@ -248,35 +254,22 @@ const StudentPortal = () => {
             </Card>
           </div>
 
-          {/* Right Column - Sidebar */}
+          {/* Right Column - QR Scan */}
           <div>
             <Card className="sticky top-8 border-none p-6 shadow-medium">
-              <div className="mb-6">
-                <h3 className="mb-2 text-sm text-muted-foreground">Overall Attendance</h3>
-                <div className={`text-4xl font-bold ${getAttendanceColor(overallRate)}`}>
-                  {overallRate.toFixed(0)}%
-                </div>
+              <div className="flex items-center gap-2 mb-2">
+                <QrCode className="h-6 w-6 text-primary" />
+                <h2 className="text-xl font-semibold text-card-foreground">Mark Attendance</h2>
               </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg bg-success/10 p-3">
-                  <span className="text-sm text-muted-foreground">Present</span>
-                  <span className="text-lg font-bold text-success">{totalPresent}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-destructive/10 p-3">
-                  <span className="text-sm text-muted-foreground">Absent</span>
-                  <span className="text-lg font-bold text-destructive">{totalAbsent}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-                  <span className="text-sm text-muted-foreground">Courses</span>
-                  <span className="text-lg font-bold text-foreground">{MOCK_COURSE_ATTENDANCE.length}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-muted p-3">
-                  <span className="text-sm text-muted-foreground">Total Sessions</span>
-                  <span className="text-lg font-bold text-foreground">
-                    {MOCK_COURSE_ATTENDANCE.reduce((s, c) => s + c.totalSessions, 0)}
-                  </span>
-                </div>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Scan the QR code displayed by your instructor
+              </p>
+              <div className="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-6 text-center">
+                <QrCode className="mx-auto mb-4 h-12 w-12 text-primary" />
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Camera access for QR scanning will be available in mobile app
+                </p>
+                <Button className="bg-gradient-primary shadow-medium">Scan QR Code</Button>
               </div>
 
               <div className="mt-6 rounded-lg bg-primary/5 p-4">
