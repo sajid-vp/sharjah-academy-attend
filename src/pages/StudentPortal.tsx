@@ -179,7 +179,7 @@ const StudentPortal = () => {
                 <Calendar className="h-6 w-6 text-primary" />
                 <h2 className="text-xl font-semibold text-card-foreground">Attendance History</h2>
               </div>
-              <div className="divide-y">
+              <div className="space-y-3">
                 {courseGroups.map((group) => {
                   const attended = group.records.filter((r) => r.status === "present").length;
                   const missed = group.records.filter((r) => r.status === "absent").length;
@@ -193,47 +193,49 @@ const StudentPortal = () => {
                       open={isOpen}
                       onOpenChange={() => setExpandedCourse(isOpen ? null : group.courseCode)}
                     >
-                      <CollapsibleTrigger className="w-full py-4 flex items-center justify-between hover:bg-muted/50 rounded-lg px-3 transition-colors">
-                        <div className="flex-1 text-left">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-mono text-muted-foreground">{group.courseCode}</span>
-                            <span className="font-medium text-card-foreground">{group.courseName}</span>
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="text-success">{attended} attended</span>
-                            <span className="text-destructive">{missed} missed</span>
-                            <span>{total} total</span>
-                          </div>
-                          <Progress value={rate} className="mt-2 h-1.5" />
-                        </div>
-                        <div className="ml-4 flex items-center gap-3">
-                          <span className="text-sm font-bold text-primary">{rate.toFixed(0)}%</span>
-                          {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="space-y-1 pb-3 pl-3 pr-3">
-                          {group.records.map((record) => (
-                            <div key={record.id} className="flex items-center justify-between rounded-lg border bg-card p-3 text-sm">
-                              <div className="flex items-center gap-4 text-muted-foreground">
-                                <span>{record.date}</span>
-                                <span>{record.time}</span>
-                              </div>
-                              {record.status === "present" ? (
-                                <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5">
-                                  <CheckCircle className="h-3.5 w-3.5 text-success" />
-                                  <span className="text-xs font-medium text-success">Present</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-0.5">
-                                  <Clock className="h-3.5 w-3.5 text-destructive" />
-                                  <span className="text-xs font-medium text-destructive">Absent</span>
-                                </div>
-                              )}
+                      <Card className="border shadow-sm overflow-hidden">
+                        <CollapsibleTrigger className="w-full p-5 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded">{group.courseCode}</span>
+                              <span className="text-base font-semibold text-card-foreground">{group.courseName}</span>
                             </div>
-                          ))}
-                        </div>
-                      </CollapsibleContent>
+                            <div className="flex items-center gap-5 text-sm text-muted-foreground mt-1">
+                              <span className="text-success font-medium">{attended} attended</span>
+                              <span className="text-destructive font-medium">{missed} missed</span>
+                              <span>{total} total</span>
+                            </div>
+                            <Progress value={rate} className="mt-3 h-2" />
+                          </div>
+                          <div className="ml-6 flex items-center gap-3">
+                            <span className="text-lg font-bold text-primary">{rate.toFixed(0)}%</span>
+                            {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="space-y-1.5 px-5 pb-5 pt-1 border-t">
+                            {group.records.map((record) => (
+                              <div key={record.id} className="flex items-center justify-between rounded-lg border bg-muted/30 p-3.5 text-sm">
+                                <div className="flex items-center gap-4 text-muted-foreground">
+                                  <span>{record.date}</span>
+                                  <span>{record.time}</span>
+                                </div>
+                                {record.status === "present" ? (
+                                  <div className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1">
+                                    <CheckCircle className="h-4 w-4 text-success" />
+                                    <span className="text-xs font-medium text-success">Present</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1">
+                                    <Clock className="h-4 w-4 text-destructive" />
+                                    <span className="text-xs font-medium text-destructive">Absent</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </CollapsibleContent>
+                      </Card>
                     </Collapsible>
                   );
                 })}
